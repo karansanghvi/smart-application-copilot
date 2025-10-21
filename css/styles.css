@@ -1,0 +1,13 @@
+.sac-highlight {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+  transition: outline 0.3s ease;
+}
+
+.sac-highlight:focus {
+  outline: 3px solid #2563eb !important;
+}
+
+.sac-filled {
+  background-color: #dcfce7 !important;
+}
