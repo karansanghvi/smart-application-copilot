@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // State
   let currentStep = 1;
-  const totalSteps = 5;
+  const totalSteps = 7;
   let skills = [];
   let experienceCount = 0;
   
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // File Upload
+  // File Upload - Resume
   const uploadBox = document.getElementById('uploadBox');
   const resumeUpload = document.getElementById('resumeUpload');
   const uploadedFile = document.getElementById('uploadedFile');
@@ -138,6 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const removeFile = document.getElementById('removeFile');
   let uploadedResume = null;
   
+  // File Upload - Cover Letter
+  const uploadBoxCover = document.getElementById('uploadBoxCover');
+  const coverLetterUpload = document.getElementById('coverLetterUpload');
+  const uploadedFileCover = document.getElementById('uploadedFileCover');
+  const fileNameCover = document.getElementById('fileNameCover');
+  const fileSizeCover = document.getElementById('fileSizeCover');
+  const removeFileCover = document.getElementById('removeFileCover');
+  let uploadedCoverLetter = null;
+  
+  // Resume Upload Handlers
   if (uploadBox) {
     uploadBox.addEventListener('click', () => {
       resumeUpload.click();
@@ -161,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const files = e.dataTransfer.files;
       if (files.length > 0) {
-        handleFileUpload(files[0]);
+        handleFileUpload(files[0], 'resume');
       }
     });
   }
@@ -169,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (resumeUpload) {
     resumeUpload.addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
-        handleFileUpload(e.target.files[0]);
+        handleFileUpload(e.target.files[0], 'resume');
       }
     });
   }
@@ -180,6 +190,52 @@ document.addEventListener('DOMContentLoaded', () => {
       resumeUpload.value = '';
       uploadBox.style.display = 'block';
       uploadedFile.style.display = 'none';
+    });
+  }
+
+  // Cover Letter Upload Handlers
+  if (uploadBoxCover) {
+    uploadBoxCover.addEventListener('click', () => {
+      coverLetterUpload.click();
+    });
+    
+    uploadBoxCover.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBoxCover.style.borderColor = '#6366f1';
+      uploadBoxCover.style.background = 'rgba(99, 102, 241, 0.1)';
+    });
+    
+    uploadBoxCover.addEventListener('dragleave', () => {
+      uploadBoxCover.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      uploadBoxCover.style.background = 'rgba(255, 255, 255, 0.03)';
+    });
+    
+    uploadBoxCover.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBoxCover.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+      uploadBoxCover.style.background = 'rgba(255, 255, 255, 0.03)';
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileUpload(files[0], 'cover');
+      }
+    });
+  }
+  
+  if (coverLetterUpload) {
+    coverLetterUpload.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileUpload(e.target.files[0], 'cover');
+      }
+    });
+  }
+  
+  if (removeFileCover) {
+    removeFileCover.addEventListener('click', () => {
+      uploadedCoverLetter = null;
+      coverLetterUpload.value = '';
+      uploadBoxCover.style.display = 'block';
+      uploadedFileCover.style.display = 'none';
     });
   }
   
@@ -238,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(tag);
   }
   
-  function handleFileUpload(file) {
+  function handleFileUpload(file, type) {
     const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
     if (!validTypes.includes(file.type)) {
       alert('Please upload a PDF, DOC, or DOCX file');
@@ -250,11 +306,19 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    uploadedResume = file;
-    fileName.textContent = file.name;
-    fileSize.textContent = formatFileSize(file.size);
-    uploadBox.style.display = 'none';
-    uploadedFile.style.display = 'flex';
+    if (type === 'resume') {
+      uploadedResume = file;
+      fileName.textContent = file.name;
+      fileSize.textContent = formatFileSize(file.size);
+      uploadBox.style.display = 'none';
+      uploadedFile.style.display = 'flex';
+    } else if (type === 'cover') {
+      uploadedCoverLetter = file;
+      fileNameCover.textContent = file.name;
+      fileSizeCover.textContent = formatFileSize(file.size);
+      uploadBoxCover.style.display = 'none';
+      uploadedFileCover.style.display = 'flex';
+    }
   }
   
   function formatFileSize(bytes) {
@@ -291,10 +355,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Additional validation for skills (Step 3)
-    if (step === 3 && skills.length === 0) {
-      alert('Please add at least one skill');
-      isValid = false;
-    }
+    // if (step === 3 && skills.length === 0) {
+    //   alert('Please add at least one skill');
+    //   isValid = false;
+    // }
     
     if (!isValid) {
       alert('Please fill in all required fields');
@@ -342,33 +406,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = {
       // Personal Info
       firstName: formElements.firstName.value,
-      middleName: formElements.middleName ? formElements.middleName.value : '',
+      middleName: formElements.middleName?.value || '',
       lastName: formElements.lastName.value,
       email: formElements.email.value,
       phone: formElements.phone.value,
       addressOne: formElements.addressOne.value,
-      addressTwo: formElements.addressTwo ? formElements.addressTwo.value : '',
-      city: formElements.city ? formElements.city.value : '',
-      state: formElements.state ? formElements.state.value : '',
-      country: formElements.country ? formElements.country.value : '',
+      addressTwo: formElements.addressTwo?.value || '',
+      city: formElements.city?.value || '',
+      state: formElements.state?.value || '',
+      country: formElements.country?.value || '',
       
       // Work Experiences (array)
       experiences: allExperiences,
       
       // Skills
       skills: skills,
-      linkedin: formElements.linkedin ? formElements.linkedin.value : '',
-      github: formElements.github ? formElements.github.value : '',
-      website: formElements.website ? formElements.website.value : '',
+      linkedin: formElements.linkedin?.value || '',
+      github: formElements.github?.value || '',
+      website: formElements.website?.value || '',
       
       // Job Preferences
-      workType: formElements.workType.value,
-      expectedSalary: formElements.expectedSalary ? formElements.expectedSalary.value : '',
-      preferredLocations: formElements.preferredLocations ? formElements.preferredLocations.value : '',
+      workType: formElements.workType?.value || '',
+      expectedSalary: formElements.expectedSalary?.value || '',
+      preferredLocations: formElements.preferredLocations?.value || '',
+
+      // Work Authorization
+      authorized: formElements.authorized?.value || '',
+      sponsorship: formElements.sponsorship?.value || '',
+      visaSponsorship: formElements.visaSponsorship?.value || '',
       
-      // Resume
+      // Resume & Cover Letter
       resumeUploaded: uploadedResume !== null,
       resumeName: uploadedResume ? uploadedResume.name : null,
+      coverLetterUploaded: uploadedCoverLetter !== null,
+      coverLetterName: uploadedCoverLetter ? uploadedCoverLetter.name : null,
+
+      // Additional Info
+      gender: formElements.gender.value,
+      hispanicLatino: formElements.hispanicLatino?.value || '',
+      race: formElements.race?.value || '',
+      veteran: formElements.veteran?.value || '',
+      disability: formElements.disability?.value || '',
       
       // Metadata
       createdAt: new Date().toISOString(),

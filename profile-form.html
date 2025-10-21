@@ -25,7 +25,6 @@
                     </div>
                     <div class="step-info">
                         <h3>Personal Information</h3>
-                        <p>Basic details</p>
                     </div>
                 </div>
 
@@ -38,7 +37,6 @@
                     </div>
                     <div class="step-info">
                         <h3>Professional Summary</h3>
-                        <p>Work experience</p>
                     </div>
                 </div>
 
@@ -51,7 +49,6 @@
                     </div>
                     <div class="step-info">
                         <h3>Skills & Expertise</h3>
-                        <p>Your capabilities</p>
                     </div>
                 </div>
 
@@ -64,7 +61,6 @@
                     </div>
                     <div class="step-info">
                         <h3>Job Preferences</h3>
-                        <p>What you're looking for</p>
                     </div>
                 </div>
 
@@ -76,8 +72,32 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Upload Resume</h3>
-                        <p>Optional attachment</p>
+                        <h3>Abroad Authorization</h3>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="6">
+                    <div class="step-number">
+                        <span class="number">6</span>
+                        <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display: none;">
+                            <path d="M5 10L8.5 13.5L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>Upload Documents</h3>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="7">
+                    <div class="step-number">
+                        <span class="number">7</span>
+                        <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display: none;">
+                            <path d="M5 10L8.5 13.5L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>Additional Questions</h3>
+                        <!-- <p>Optional attachment</p> -->
                     </div>
                 </div>
             </div>
@@ -218,99 +238,224 @@
 
                     <!-- Step 3: Skills -->
                     <div class="form-step" data-step="3">
-                    <h2>Skills & Expertise</h2>
-                    <p class="step-description">What are your key skills?</p>
+                        <h2>Skills & Expertise</h2>
+                        <p class="step-description">What are your key skills?</p>
                     
-                    <div class="form-group">
-                        <label>Enter Skills</label>
-                        <div class="tags-input-container">
-                            <div class="tags-list" id="skillsTags"></div>
-                            <input type="text" id="skillsInput" class="tags-input" placeholder="Type a skill and press Enter (e.g., JavaScript, Python)">
+                        <div class="form-group">
+                            <label>Enter Skills</label>
+                            <div class="tags-input-container">
+                                <div class="tags-list" id="skillsTags"></div>
+                                <input type="text" id="skillsInput" class="tags-input" placeholder="Type a skill and press Enter (e.g., JavaScript, Python)">
+                                </div>
+                                <p class="helper-text">Press Enter after each skill</p>
                             </div>
-                            <p class="helper-text">Press Enter after each skill</p>
-                        </div>
                     
-                        <div class="form-group">
-                            <label for="linkedin">LinkedIn Profile</label>
-                            <input type="url" id="linkedin" name="linkedin" placeholder="LinkedIn URL">
-                        </div>
+                            <div class="form-group">
+                                <label for="linkedin">LinkedIn Profile</label>
+                                <input type="url" id="linkedin" name="linkedin" placeholder="LinkedIn URL">
+                            </div>
                     
-                        <div class="form-group">
-                            <label for="github">GitHub Profile</label>
-                            <input type="url" id="github" name="github" placeholder="GitHub URL">
-                        </div>
+                            <div class="form-group">
+                                <label for="github">GitHub Profile</label>
+                                <input type="url" id="github" name="github" placeholder="GitHub URL">
+                            </div>
 
-                        <div class="form-group">
-                            <label for="website">Enter Website URL</label>
-                            <input type="url" id="website" name="website" placeholder="Website URL">
-                        </div>
+                            <div class="form-group">
+                                <label for="website">Enter Website URL</label>
+                                <input type="url" id="website" name="website" placeholder="Website URL">
+                            </div>
                     </div>
 
                     <!-- Step 4: Job Preferences -->
                     <div class="form-step" data-step="4">
-                    <h2>Job Preferences</h2>
-                    <p class="step-description">What are you looking for in your next role?</p>
+                        <h2>Job Preferences</h2>
+                        <p class="step-description">What are you looking for in your next role?</p>
                     
-                    <div class="form-group">
-                        <label>Work Type *</label>
-                        <div class="radio-group">
-                        <label class="radio-label">
-                            <input type="radio" name="workType" value="remote" required>
-                            <span>Remote Only</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="workType" value="hybrid">
-                            <span>Hybrid</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="workType" value="onsite">
-                            <span>On-site</span>
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="workType" value="flexible">
-                            <span>Flexible</span>
-                        </label>
+                        <div class="form-group">
+                            <label>Work Type</label>
+                            <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="workType" value="remote" required>
+                                <span>Remote Only</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="workType" value="hybrid">
+                                <span>Hybrid</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="workType" value="onsite">
+                                <span>On-site</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="workType" value="flexible">
+                                <span>Flexible</span>
+                            </label>
+                            </div>
                         </div>
-                    </div>
                     
-                    <div class="form-group">
-                        <label for="expectedSalary">Expected Salary (Annual)</label>
-                        <input type="text" id="expectedSalary" name="expectedSalary" placeholder="$80,000 - $100,000">
-                    </div>
+                        <div class="form-group">
+                            <label for="expectedSalary">Expected Salary (Annual)</label>
+                            <input type="text" id="expectedSalary" name="expectedSalary" placeholder="$80,000 - $100,000">
+                        </div>
                     
-                    <div class="form-group">
-                        <label for="preferredLocations">Preferred Locations</label>
-                        <input type="text" id="preferredLocations" name="preferredLocations" placeholder="San Francisco, New York, Remote">
-                    </div>
+                        <div class="form-group">
+                            <label for="preferredLocations">Preferred Locations</label>
+                            <input type="text" id="preferredLocations" name="preferredLocations" placeholder="San Francisco, New York, Remote">
+                        </div>
                     </div>
 
-                    <!-- Step 5: Upload Resume -->
+                    <!-- Step 5: Abroad Authorization -->
                     <div class="form-step" data-step="5">
-                    <h2>Upload Your Resume</h2>
-                    <p class="step-description">Upload your resume to auto-fill additional details (optional)</p>
-                    
-                    <div class="upload-container">
-                        <div class="upload-box" id="uploadBox">
-                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                            <path d="M32 10V42M32 42L44 30M32 42L20 30" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M10 54H54" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
-                        </svg>
-                        <h3>Drop your resume here</h3>
-                        <p>or click to browse</p>
-                        <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" hidden>
-                        <p class="file-types">Supported: PDF, DOC, DOCX (Max 5MB)</p>
+                        <h2>Abroad Authorization</h2>
+                        <p class="step-description">This form is for the people applying for jobs abroad.</p>
+
+                        <div class="form-group">
+                            <label>Are you legally authorized to work abroad?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="authorized" value="yes" required>
+                                    <span>Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="authorized" value="no">
+                                    <span>No</span>
+                                </label>
+                            </div>
                         </div>
+
+                        <div class="form-group">
+                            <label>Do you require visa sponsorship now/future?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="sponsorship" value="yes" required>
+                                    <span>Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="sponsorship" value="no">
+                                    <span>No</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="visaSponsorship">What type of visa sponsorship do you require now/future?</label>
+                            <input type="text" id="visaSponsorship" name="visaSponsorship" placeholder="Visa Sponsorship Type">
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Upload Documents -->
+                    <div class="form-step" data-step="6">
+                        <h2>Upload Your Documents</h2>
+                        <p class="step-description">Save your documents</p>
+
+                        <!-- RESUME UPLOAD -->
+                        <div class="upload-container">
+                            <div class="upload-box" id="uploadBox">
+                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                    <path d="M32 10V42M32 42L44 30M32 42L20 30" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 54H54" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+                                </svg>
+                                <h3>Drop your resume here</h3>
+                                <p>or click to browse</p>
+                                <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" hidden>
+                                <p class="file-types">Supported: PDF, DOC, DOCX (Max 5MB)</p>
+                            </div>
+                            
+                            <div class="uploaded-file" id="uploadedFile" style="display: none;">
+                                <div class="file-icon">📄</div>
+                                <div class="file-info">
+                                    <p class="file-name" id="fileName"></p>
+                                    <p class="file-size" id="fileSize"></p>
+                                </div>
+                                <button type="button" class="remove-file" id="removeFile">✕</button>
+                            </div>
+                        </div>
+
+                        <br />
+
+                        <!-- COVER LETTER UPLOAD -->
+                        <div class="upload-container">
+                            <div class="upload-box" id="uploadBoxCover">
+                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                                    <path d="M32 10V42M32 42L44 30M32 42L20 30" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 54H54" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
+                                </svg>
+                                <h3>Drop your cover letter here</h3>
+                                <p>or click to browse</p>
+                                <input type="file" id="coverLetterUpload" accept=".pdf,.doc,.docx" hidden>
+                                <p class="file-types">Supported: PDF, DOC, DOCX (Max 5MB)</p>
+                            </div>
+                            
+                            <div class="uploaded-file" id="uploadedFileCover" style="display: none;">
+                                <div class="file-icon">📄</div>
+                                <div class="file-info">
+                                    <p class="file-name" id="fileNameCover"></p>
+                                    <p class="file-size" id="fileSizeCover"></p>
+                                </div>
+                                <button type="button" class="remove-file" id="removeFileCover">✕</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 7: Additional Questions -->
+                     <div class="form-step" data-step="7">
+                        <h2>Additional Questions</h2>  
+                        <p class="step-description">Fill out the below self-identity questions.</p>  
+                        <div class="form-group">
+                            <label for="gender">Select Gender *</label>
+                            <select id="gender" name="gender" required>
+                                <option value="" disabled selected>Select your option</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="otherGender">Decline To Self Identify</option>
+                            </select>
+                        </div> 
                         
-                        <div class="uploaded-file" id="uploadedFile" style="display: none;">
-                        <div class="file-icon">📄</div>
-                        <div class="file-info">
-                            <p class="file-name" id="fileName"></p>
-                            <p class="file-size" id="fileSize"></p>
-                        </div>
-                        <button type="button" class="remove-file" id="removeFile">✕</button>
-                        </div>
-                    </div>
-                    </div>
+                        <div class="form-group">
+                            <label for="hispanicLatino">Are you Hispanic/Latino?</label>
+                            <select id="hispanicLatino" name="hispanicLatino">
+                                <option value="" disabled selected>Select your option</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="otherHisLat">Decline To Self Identify</option>
+                            </select>
+                        </div> 
+
+                        <div class="form-group">
+                            <label for="race">Please Identify Your Race</label>
+                            <select id="race" name="race">
+                                <option value="" disabled selected>Select your option</option>
+                                <option value="american">American Indian or Alaskan Native</option>
+                                <option value="asian">Asian</option>
+                                <option value="black">Black or African American</option>
+                                <option value="white">White</option>
+                                <option value="asian">Asian</option>
+                                <option value="native">Native Hawaiian or Other Pacific Islander</option>
+                                <option value="twoOrMore">Two or More Races</option>
+                                <option value="otherRace">Decline To Self Identify</option>
+                            </select>
+                        </div> 
+
+                        <div class="form-group">
+                            <label for="veteran">Select Veteran Status</label>
+                            <select id="veteran" name="veteran">
+                                <option value="" disabled selected>Select your option</option>
+                                <option value="notVeteran">I am not a protected veteran</option>
+                                <option value="iVeteran">I identify as one or more of the classification of a protected veteran</option>
+                                <option value="otherVeteran">Decline To Self Identify</option>
+                            </select>
+                        </div> 
+
+                        <div class="form-group">
+                            <label for="disability">Select Disability Status</label>
+                            <select id="disability" name="disability">
+                                <option value="" disabled selected>Select your option</option>
+                                <option value="yesDisability">Yes, I have a disability, or have had one in the past</option>
+                                <option value="noDisability">No, I do not have a disability and have not had one in the past</option>
+                                <option value="otherDisability">Decline To Self Identify</option>
+                            </select>
+                        </div> 
+                     </div>
 
                     <!-- Navigation Buttons -->
                     <div class="form-navigation">
