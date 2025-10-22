@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JobFlow</title>
-    <link rel="stylesheet" href="./css/profile-form.css">
+    <link rel="stylesheet" href="./css/profile-page.css">
 </head>
 <body>
     <div class="main-wrapper">
@@ -106,8 +106,7 @@
         <!-- Main Content Area -->
         <div class="content-area">
             <div class="container">
-                <h1>Complete Your Profile</h1>
-                <p>Help us personalize your job application experience.</p>
+                <h1>Profile Page</h1>
             </div>
 
             <div class="line"></div>
@@ -118,189 +117,220 @@
                     <!-- Step 1: Personal Information -->
                     <div class="form-step active" data-step="1">
                         <h2>Personal Information</h2>
-                        <p class="step-description">Let's start with your basic details</p>
                         
                         <div class="form-grid-three">
                             <div class="form-group">
-                                <label for="firstName">Enter First Name *</label>
-                                <input type="text" id="firstName" name="firstName" required placeholder="Name">
+                                <label for="firstName">First Name:</label>
+                                <div class="data-box">
+                                    <span id="firstName" class="dataText">-</span>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="middleName">Enter Middle Name</label>
-                                <input type="text" id="middleName" name="middleName" placeholder="Middle Name">
+                                <label for="middleName">Middle Name:</label>
+                                <div class="data-box">
+                                    <span id="middleName" class="dataText">-</span>
+                                </div>
                             </div>
                         
                             <div class="form-group">
-                                <label for="lastName">Enter Last Name *</label>
-                                <input type="text" id="lastName" name="lastName" required placeholder="Surname">
+                                <label for="lastName">Last Name:</label>
+                                <div class="data-box">
+                                    <span id="lastName" class="dataText">-</span>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="form-grid-two">
                             <div class="form-group">
-                                <label for="emailAddress">Enter Email Address *</label>
-                                <input type="email" id="email" name="email" required placeholder="Email Address">
+                                <label for="emailAddress">Email Address:</label>
+                                <div class="data-box">
+                                    <span id="email" class="dataText"></span>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="phone">Enter Phone Number *</label>
-                                <input type="tel" id="phone" name="phone" placeholder="Phone" required>
+                                <label for="phone">Phone Number:</label>
+                                <div class="data-box">
+                                    <span id="phone" class="dataText"></span>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="form-grid-two">
                             <div class="form-group">
-                                <label for="addressOne">Address Line 1 *</label>
-                                <input type="text" id="addressOne" name="addressOne" required placeholder="Address Line 1">
+                                <label for="addressOne">Address Line 1:</label>
+                                <div class="data-box">
+                                    <span id="addressOne" class="dataText">-</span>
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label for="addressTwo">Address Line 2</label>
-                                <input type="text" id="addressTwo" name="addressTwo" placeholder="Address Line 2">
+                                <div class="data-box">
+                                    <span id="addressTwo" class="dataText">-</span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="form-grid-three">
                             <div class="form-group">
-                                <label for="city">Enter City *</label>
-                                <input type="text" id="city" name="city" placeholder="City" required>
+                                <label for="city">City:</label>
+                                <div class="data-box">
+                                    <span id="city" class="dataText">-</span>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="state">Enter State *</label>
-                                <input type="text" id="state" name="state" placeholder="State" required>
+                                <label for="state">State:</label>
+                                <div class="data-box">
+                                    <span id="state" class="dataText">-</span>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="country">Enter Country *</label>
-                                <input type="text" id="country" name="country" placeholder="Country" required>
+                                <label for="country">Country:</label>
+                                <div class="data-box">
+                                    <span id="country" class="dataText">-</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Step 2: Professional Summary -->
                     <div class="form-step" data-step="2">
-                        <h2>Professional Summary</h2>
-                        <p class="step-description">Tell us about your professional background</p>
+                        <!-- Primary Work Experience Section -->
+                        <div class="experience-section-header" style="margin-bottom: 1rem;">
+                            <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0.5rem;">Primary Work Experience</h3>
+                        </div>
 
-                        <!-- Primary Experience (always visible) -->
                         <div class="experience-item primary-experience">
-                            <div class="experience-header">
-                                <h3>Current/Most Recent Position</h3>
-                            </div>
-
                             <div class="form-group">
-                                <label for="jobTitle">Enter Job Title *</label>
-                                <input type="text" id="jobTitle" name="jobTitle" required placeholder="Title">
+                                <label style="color: white;">Job Title</label>
+                                <div class="data-box">
+                                    <span id="jobTitle" class="dataText" style="color: white;">-</span>
+                                </div>
                             </div>
                             
                             <div class="form-group">
-                                <label for="companyName">Enter Company *</label>
-                                <input type="text" id="companyName" name="companyName" placeholder="Company" required>
+                                <label style="color: white;">Company</label>
+                                <div class="data-box">
+                                    <span id="companyName" class="dataText" style="color: white;">-</span>
+                                </div>
                             </div>
 
                             <div class="form-grid-two">
                                 <div class="form-group">
-                                    <label for="startDate">Select Start Date *</label>
-                                    <input type="date" id="startDate" name="startDate" required>
+                                    <label style="color: white;">Start Date</label>
+                                    <div class="data-box">
+                                        <span id="startDate" class="dataText" style="color: white;">-</span>
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="endDate">Select End Date</label>
-                                    <input type="date" id="endDate" name="endDate">
+                                    <label style="color: white;">End Date</label>
+                                    <div class="data-box">
+                                        <span id="endDate" class="dataText" style="color: white;">-</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label class="checkbox-container">
-                                    <input type="checkbox" id="currentlyWorking" name="currentlyWorking">
-                                    <span class="checkbox-label">I am currently working in this role</span>
-                                </label>
+                                <label style="color: white;">Currently Working</label>
+                                <div class="data-box">
+                                    <span id="currentlyWorkingStatus" class="dataText" style="color: white;">-</span>
+                                </div>
                             </div>
                         
                             <div class="form-group">
-                                <label for="professionalSummary">Professional Summary *</label>
-                                <textarea id="professionalSummary" name="professionalSummary" rows="6" required 
-                                    placeholder="Write a brief summary of your professional experience..."></textarea>
+                                <label style="color: white;">Professional Summary</label>
+                                <div class="data-box" style="min-height: 80px;">
+                                    <span id="professionalSummary" class="dataText" style="color: white; white-space: pre-wrap;">-</span>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Container for additional experiences -->
-                        <div id="additionalExperiences"></div>
-
-                        <!-- Add Experience Button -->
-                        <div class="add-experience-container">
-                            <button type="button" class="btn-add-experience" id="addExperienceBtn">
-                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                </svg>
-                                Add Another Experience
-                            </button>
+                        <!-- Additional Work Experiences Section -->
+                        <div id="additionalExperiencesSection" style="margin-top: 2rem; display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0.5rem;">Additional Work Experiences</h3>
+                            </div>
+                            <div id="additionalExperiencesContainer">
+                                <!-- Additional experiences will be populated here -->
+                            </div>
                         </div>
                     </div>
 
                     <!-- Step 3: Skills -->
                     <div class="form-step" data-step="3">
                         <h2>Skills & Expertise</h2>
-                        <p class="step-description">What are your key skills?</p>
                     
                         <div class="form-group">
                             <label>Enter Skills</label>
                             <div class="tags-input-container">
                                 <div class="tags-list" id="skillsTags"></div>
-                                <input type="text" id="skillsInput" class="tags-input" placeholder="Type a skill and press Enter (e.g., JavaScript, Python)">
+                                    <div class="data-box">
+                                        <span id="skillsDisplay" class="dataText">-</span>
+                                    </div>
                                 </div>
-                                <p class="helper-text">Press Enter after each skill</p>
                             </div>
                     
                             <div class="form-group">
                                 <label for="linkedin">LinkedIn Profile</label>
-                                <input type="url" id="linkedin" name="linkedin" placeholder="LinkedIn URL">
+                                <div class="data-box">
+                                    <span id="linkedin" class="dataText">-</span>
+                                </div>
                             </div>
                     
                             <div class="form-group">
                                 <label for="github">GitHub Profile</label>
-                                <input type="url" id="github" name="github" placeholder="GitHub URL">
+                                <div class="data-box">
+                                    <span id="github" class="dataText">-</span>
+                                </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="website">Enter Website URL</label>
-                                <input type="url" id="website" name="website" placeholder="Website URL">
+                                <div class="data-box">
+                                    <span id="website" class="dataText">-</span>
+                                </div>
                             </div>
                     </div>
 
                     <!-- Step 4: Job Preferences -->
                     <div class="form-step" data-step="4">
                         <h2>Job Preferences</h2>
-                        <p class="step-description">What are you looking for in your next role?</p>
-                    
+
                         <div class="form-group">
-                            <label>Work Type</label>
+                            <label style="color: white;">Work Type</label>
                             <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="workType" value="remote" required>
-                                <span>Remote Only</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="workType" value="hybrid">
-                                <span>Hybrid</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="workType" value="onsite">
-                                <span>On-site</span>
-                            </label>
-                            <label class="radio-label">
-                                <input type="radio" name="workType" value="flexible">
-                                <span>Flexible</span>
-                            </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="workType" value="remote" id="workType-remote">
+                                    <span style="color: white;">Remote Only</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="workType" value="hybrid" id="workType-hybrid">
+                                    <span style="color: white;">Hybrid</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="workType" value="onsite" id="workType-onsite">
+                                    <span style="color: white;">On-site</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="workType" value="flexible" id="workType-flexible">
+                                    <span style="color: white;">Flexible</span>
+                                </label>
                             </div>
                         </div>
                     
                         <div class="form-group">
                             <label for="expectedSalary">Expected Salary (Annual)</label>
-                            <input type="text" id="expectedSalary" name="expectedSalary" placeholder="$80,000 - $100,000">
+                            <div class="data-box">
+                                <span id="salary" class="dataText">-</span>
+                            </div>
                         </div>
                     
                         <div class="form-group">
                             <label for="preferredLocations">Preferred Locations</label>
-                            <input type="text" id="preferredLocations" name="preferredLocations" placeholder="San Francisco, New York, Remote">
+                            <div class="data-box">
+                                <span id="preferredLocations" class="dataText">-</span>
+                            </div>
                         </div>
                     </div>
 
@@ -338,62 +368,25 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="visaSponsorship">What type of visa sponsorship do you require now/future?</label>
-                            <input type="text" id="visaSponsorship" name="visaSponsorship" placeholder="Visa Sponsorship Type">
+                            <label for="visaType">What type of visa sponsorship do you require now/future?</label>
+                            <div class="data-box">
+                                <span id="visaType" class="dataText">-</span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Step 6: Upload Documents -->
                     <div class="form-step" data-step="6">
                         <h2>Upload Your Documents</h2>
-                        <p class="step-description">Save your documents</p>
 
                         <!-- RESUME UPLOAD -->
-                        <div class="upload-container">
-                            <div class="upload-box" id="uploadBox">
-                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                    <path d="M32 10V42M32 42L44 30M32 42L20 30" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M10 54H54" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
-                                </svg>
-                                <h3>Drop your resume here</h3>
-                                <p>or click to browse</p>
-                                <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" hidden>
-                                <p class="file-types">Supported: PDF, DOC, DOCX (Max 5MB)</p>
-                            </div>
-                            
-                            <div class="uploaded-file" id="uploadedFile" style="display: none;">
-                                <div class="file-icon">📄</div>
-                                <div class="file-info">
-                                    <p class="file-name" id="fileName"></p>
-                                    <p class="file-size" id="fileSize"></p>
-                                </div>
-                                <button type="button" class="remove-file" id="removeFile">✕</button>
-                            </div>
+                        <div class="form-group">
+                            <label style="color: white;">Resume</label>
                         </div>
 
-                        <br />
-
                         <!-- COVER LETTER UPLOAD -->
-                        <div class="upload-container">
-                            <div class="upload-box" id="uploadBoxCover">
-                                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                                    <path d="M32 10V42M32 42L44 30M32 42L20 30" stroke="#9ca3af" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M10 54H54" stroke="#9ca3af" stroke-width="4" stroke-linecap="round"/>
-                                </svg>
-                                <h3>Drop your cover letter here</h3>
-                                <p>or click to browse</p>
-                                <input type="file" id="coverLetterUpload" accept=".pdf,.doc,.docx" hidden>
-                                <p class="file-types">Supported: PDF, DOC, DOCX (Max 5MB)</p>
-                            </div>
-                            
-                            <div class="uploaded-file" id="uploadedFileCover" style="display: none;">
-                                <div class="file-icon">📄</div>
-                                <div class="file-info">
-                                    <p class="file-name" id="fileNameCover"></p>
-                                    <p class="file-size" id="fileSizeCover"></p>
-                                </div>
-                                <button type="button" class="remove-file" id="removeFileCover">✕</button>
-                            </div>
+                        <div class="form-group">
+                            <label style="color: white;">Cover Letter</label>
                         </div>
                     </div>
 
@@ -476,6 +469,7 @@
         </div>
     </div>
 
+    <script src="./js/profile-page.js"></script>
     <script src="./js/profile-form.js"></script>
 </body>
 </html>
