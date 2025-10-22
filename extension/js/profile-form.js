@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let skills = [];
   let experienceCount = 0;
   
+  // Backend API URL - Update this for production
+  const API_URL = 'http://localhost:3000/api/profile';
+  
   // DOM Elements
   const form = document.getElementById('profileForm');
   const steps = document.querySelectorAll('.form-step');
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         endDateInput.disabled = false;
         endDateInput.style.opacity = '1';
-        endDateInput.required = false; // Keep optional
+        endDateInput.required = false;
       }
     });
   }
@@ -69,14 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="date" id="startDate_${experienceCount}" name="startDate_${experienceCount}" required>
           </div>
           <div class="form-group">
-            <label for="endDate_${experienceCount}">Select End Date *</label>
-            <input type="date" id="endDate_${experienceCount}" name="endDate_${experienceCount}" required>
+            <label for="endDate_${experienceCount}">Select End Date</label>
+            <input type="date" id="endDate_${experienceCount}" name="endDate_${experienceCount}">
           </div>
         </div>
     
         <div class="form-group">
-          <label for="experienceSummary_${experienceCount}">Job Description *</label>
-          <textarea id="experienceSummary_${experienceCount}" name="experienceSummary_${experienceCount}" rows="4" required 
+          <label for="experienceSummary_${experienceCount}">Job Description</label>
+          <textarea id="experienceSummary_${experienceCount}" name="experienceSummary_${experienceCount}" rows="4" 
             placeholder="Describe your responsibilities and achievements..."></textarea>
         </div>
       </div>
@@ -84,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     additionalExperiencesContainer.insertAdjacentHTML('beforeend', experienceHTML);
     
-    // Scroll to the new experience
     const newExperience = additionalExperiencesContainer.lastElementChild;
     newExperience.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
@@ -95,17 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const experienceItem = document.querySelector(`[data-experience-id="${removeId}"]`);
       
       if (experienceItem) {
-        console.log('Removing experience:', removeId);
-        
-        // Add fade out animation
         experienceItem.style.transition = 'all 0.3s ease';
         experienceItem.style.opacity = '0';
         experienceItem.style.transform = 'translateX(-20px)';
         
-        // Remove after animation
         setTimeout(() => {
           experienceItem.remove();
-          console.log('Experience removed');
         }, 300);
       }
     }
@@ -248,29 +245,18 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   
   nextBtn.addEventListener('click', () => {
-    console.log('=== NEXT BUTTON CLICKED ===');
-    console.log('Current step:', currentStep);
-    
-    // const isValid = validateStep(currentStep);
-    // console.log('Validation result:', isValid);
-    
-    // if (isValid) {
-      console.log('Validation passed! Moving to next step...');
-      if (currentStep < totalSteps) {
-        currentStep++;
-        console.log('New step:', currentStep);
-        showStep(currentStep);
-      }
-    // } else {
-    //   console.log('Validation FAILED - staying on current step');
-    // }
+    if (currentStep < totalSteps) {
+      currentStep++;
+      showStep(currentStep);
+    }
   });
   
   // Form submission
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     if (validateStep(currentStep)) {
-      saveFormData();
+      await saveFormData();
     }
   });
   
@@ -335,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let firstInvalidInput = null;
     
     requiredInputs.forEach(input => {
-      // Skip disabled inputs (like end date when currently working)
       if (input.disabled) return;
       
       const value = input.value ? input.value.trim() : '';
@@ -354,12 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Additional validation for skills (Step 3)
-    // if (step === 3 && skills.length === 0) {
-    //   alert('Please add at least one skill');
-    //   isValid = false;
-    // }
-    
     if (!isValid) {
       alert('Please fill in all required fields');
       if (firstInvalidInput) {
@@ -370,99 +349,139 @@ document.addEventListener('DOMContentLoaded', () => {
     return isValid;
   }
   
-  function saveFormData() {
+  async function saveFormData() {
     const formElements = form.elements;
     
-    // Collect primary experience
-    const primaryExperience = {
-      jobTitle: formElements.jobTitle.value,
-      companyName: formElements.companyName.value,
-      startDate: formElements.startDate.value,
-      endDate: formElements.endDate && !formElements.endDate.disabled ? formElements.endDate.value : '',
-      currentlyWorking: formElements.currentlyWorking ? formElements.currentlyWorking.checked : false,
-      summary: formElements.professionalSummary.value,
-      isPrimary: true
-    };
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Saving...</span>';
     
-    // Collect additional experiences
-    const additionalExperiences = [];
-    for (let i = 1; i <= experienceCount; i++) {
-      const expItem = document.querySelector(`[data-experience-id="${i}"]`);
-      if (expItem) {
-        additionalExperiences.push({
-          jobTitle: formElements[`jobTitle_${i}`].value,
-          companyName: formElements[`companyName_${i}`].value,
-          startDate: formElements[`startDate_${i}`].value,
-          endDate: formElements[`endDate_${i}`].value,
-          summary: formElements[`experienceSummary_${i}`].value,
-          isPrimary: false
-        });
+    try {
+      // Collect additional experiences
+      const additionalExperiences = [];
+      for (let i = 1; i <= experienceCount; i++) {
+        const expItem = document.querySelector(`[data-experience-id="${i}"]`);
+        if (expItem) {
+          additionalExperiences.push({
+            jobTitle: formElements[`jobTitle_${i}`]?.value || '',
+            companyName: formElements[`companyName_${i}`]?.value || '',
+            startDate: formElements[`startDate_${i}`]?.value || '',
+            endDate: formElements[`endDate_${i}`]?.value || '',
+            currentlyWorking: false,
+            jobDescription: formElements[`experienceSummary_${i}`]?.value || ''
+          });
+        }
       }
-    }
-    
-    // Combine all experiences
-    const allExperiences = [primaryExperience, ...additionalExperiences];
-    
-    const formData = {
-      // Personal Info
-      firstName: formElements.firstName.value,
-      middleName: formElements.middleName?.value || '',
-      lastName: formElements.lastName.value,
-      email: formElements.email.value,
-      phone: formElements.phone.value,
-      addressOne: formElements.addressOne.value,
-      addressTwo: formElements.addressTwo?.value || '',
-      city: formElements.city?.value || '',
-      state: formElements.state?.value || '',
-      country: formElements.country?.value || '',
       
-      // Work Experiences (array)
-      experiences: allExperiences,
+      // Create FormData object for file uploads
+      const formData = new FormData();
       
-      // Skills
-      skills: skills,
-      linkedin: formElements.linkedin?.value || '',
-      github: formElements.github?.value || '',
-      website: formElements.website?.value || '',
+      // Add files if uploaded
+      if (uploadedResume) {
+        formData.append('resume', uploadedResume);
+      }
       
-      // Job Preferences
-      workType: formElements.workType?.value || '',
-      expectedSalary: formElements.expectedSalary?.value || '',
-      preferredLocations: formElements.preferredLocations?.value || '',
-
-      // Work Authorization
-      authorized: formElements.authorized?.value || '',
-      sponsorship: formElements.sponsorship?.value || '',
-      visaSponsorship: formElements.visaSponsorship?.value || '',
+      if (uploadedCoverLetter) {
+        formData.append('coverLetter', uploadedCoverLetter);
+      }
       
-      // Resume & Cover Letter
-      resumeUploaded: uploadedResume !== null,
-      resumeName: uploadedResume ? uploadedResume.name : null,
-      coverLetterUploaded: uploadedCoverLetter !== null,
-      coverLetterName: uploadedCoverLetter ? uploadedCoverLetter.name : null,
-
-      // Additional Info
-      gender: formElements.gender.value,
-      hispanicLatino: formElements.hispanicLatino?.value || '',
-      race: formElements.race?.value || '',
-      veteran: formElements.veteran?.value || '',
-      disability: formElements.disability?.value || '',
+      // Prepare profile data matching backend expectations
+      const profileData = {
+        // Personal Information (Step 1)
+        firstName: formElements.firstName.value,
+        middleName: formElements.middleName?.value || '',
+        lastName: formElements.lastName.value,
+        email: formElements.email.value,
+        phone: formElements.phone.value,
+        addressOne: formElements.addressOne.value,
+        addressTwo: formElements.addressTwo?.value || '',
+        city: formElements.city.value,
+        state: formElements.state.value,
+        country: formElements.country.value,
+        
+        // Professional Summary (Step 2) - Primary Position
+        jobTitle: formElements.jobTitle.value,
+        companyName: formElements.companyName.value,
+        startDate: formElements.startDate.value,
+        endDate: formElements.endDate && !formElements.endDate.disabled ? formElements.endDate.value : null,
+        currentlyWorking: formElements.currentlyWorking ? formElements.currentlyWorking.checked : false,
+        professionalSummary: formElements.professionalSummary.value,
+        
+        // Additional experiences
+        additionalExperiences: additionalExperiences,
+        
+        // Skills & Expertise (Step 3)
+        skills: skills,
+        linkedin: formElements.linkedin?.value || '',
+        github: formElements.github?.value || '',
+        website: formElements.website?.value || '',
+        
+        // Job Preferences (Step 4)
+        workType: formElements.workType?.value || null,
+        expectedSalary: formElements.expectedSalary?.value || '',
+        preferredLocations: formElements.preferredLocations?.value || '',
+        
+        // Abroad Authorization (Step 5)
+        authorized: formElements.authorized?.value || null,
+        sponsorship: formElements.sponsorship?.value || null,
+        visaSponsorship: formElements.visaSponsorship?.value || '',
+        
+        // Additional Questions (Step 7)
+        gender: formElements.gender.value,
+        hispanicLatino: formElements.hispanicLatino?.value || '',
+        race: formElements.race?.value || '',
+        veteran: formElements.veteran?.value || '',
+        disability: formElements.disability?.value || ''
+      };
       
-      // Metadata
-      createdAt: new Date().toISOString(),
-      profileCompleted: true
-    };
-    
-    console.log('Saving form data:', formData);
-    
-    chrome.storage.local.set({ userProfile: formData }, () => {
-      console.log('Profile saved successfully!');
+      // Add all profile data as JSON string to FormData
+      for (const [key, value] of Object.entries(profileData)) {
+        if (key === 'additionalExperiences' || key === 'skills') {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value === null ? '' : value);
+        }
+      }
       
-      chrome.storage.local.set({ profileCompleted: true }, () => {
-        alert('Profile setup complete! You can now start auto-filling applications.');
-        window.close();
+      console.log('Sending data to backend...');
+      
+      // Send to backend API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData
       });
-    });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('Profile saved successfully:', result);
+        
+        // Also save to Chrome storage for extension use
+        chrome.storage.local.set({ 
+          userProfile: profileData,
+          profileCompleted: true,
+          profileId: result.data.id
+        }, () => {
+          alert('✅ Profile setup complete! Your information has been saved.');
+          
+          // Close the tab or redirect
+          setTimeout(() => {
+            window.close();
+          }, 1500);
+        });
+        
+      } else {
+        throw new Error(result.error || 'Failed to save profile');
+      }
+      
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('❌ Error saving profile: ' + error.message + '\n\nPlease check your connection and try again.');
+      
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Complete Setup ✓';
+    }
   }
 
   function updateSidebar(step) {
@@ -492,37 +511,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showStep(step) {
-    console.log('=== showStep called:', step, '===');
-  
-    // Hide all form steps
     steps.forEach(s => {
       s.classList.remove('active');
     });
   
-    // Show current form step
     const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
-    console.log('Found form step element:', currentStepElement);
     
     if (currentStepElement) {
       currentStepElement.classList.add('active');
-      console.log('✅ Step', step, 'is now active');
-    } else {
-      console.error('❌ Could not find form step', step);
     }
   
-    // Update sidebar
     updateSidebar(step);
     
-    // Update buttons
     prevBtn.style.display = step === 1 ? 'none' : 'inline-flex';
     nextBtn.style.display = step === totalSteps ? 'none' : 'inline-flex';
     submitBtn.style.display = step === totalSteps ? 'inline-flex' : 'none';
     
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
   // Initialize
-  console.log('Initializing form with', steps.length, 'steps');
   showStep(1);
 });
