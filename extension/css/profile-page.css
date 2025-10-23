@@ -43,11 +43,14 @@ body::before {
   position: sticky;
   top: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-header {
   margin-bottom: 40px;
+  flex-shrink: 0; 
 }
 
 .sidebar-header h2 {
@@ -57,13 +60,6 @@ body::before {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 8px;
-}
-
-.sidebar-header p {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-  font-style: normal;
 }
 
 /* Steps List */
@@ -71,13 +67,15 @@ body::before {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  flex: 1; 
+  overflow: hidden; 
 }
 
 .step-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px;
+  padding: 12px;
   border-radius: 12px;
   transition: all 0.3s ease;
   cursor: pointer;
