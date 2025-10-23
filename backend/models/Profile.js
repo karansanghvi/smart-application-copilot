@@ -1,3 +1,5 @@
+// backend/models/Profile.js
+
 const { query, getClient } = require('../conifg/database');
 
 class Profile {

@@ -1,3 +1,5 @@
+// backend/controllers/profileController.js
+
 const Profile = require('../models/Profile');
 const { validationResult } = require('express-validator');
 
