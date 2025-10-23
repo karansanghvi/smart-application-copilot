@@ -115,420 +115,905 @@
             <div class="form-container">
                 <form id="profileForm">
                     <!-- Step 1: Personal Information -->
-                    <div class="form-step active" data-step="1">
-                        <h2>Personal Information</h2>
-                        
-                        <div class="form-grid-three">
-                            <div class="form-group">
-                                <label for="firstName">First Name:</label>
-                                <div class="data-box">
-                                    <span id="firstName" class="dataText">-</span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="middleName">Middle Name:</label>
-                                <div class="data-box">
-                                    <span id="middleName" class="dataText">-</span>
-                                </div>
-                            </div>
-                        
-                            <div class="form-group">
-                                <label for="lastName">Last Name:</label>
-                                <div class="data-box">
-                                    <span id="lastName" class="dataText">-</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-grid-two">
-                            <div class="form-group">
-                                <label for="emailAddress">Email Address:</label>
-                                <div class="data-box">
-                                    <span id="email" class="dataText"></span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone">Phone Number:</label>
-                                <div class="data-box">
-                                    <span id="phone" class="dataText"></span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-grid-two">
-                            <div class="form-group">
-                                <label for="addressOne">Address Line 1:</label>
-                                <div class="data-box">
-                                    <span id="addressOne" class="dataText">-</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="addressTwo">Address Line 2</label>
-                                <div class="data-box">
-                                    <span id="addressTwo" class="dataText">-</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-grid-three">
-                            <div class="form-group">
-                                <label for="city">City:</label>
-                                <div class="data-box">
-                                    <span id="city" class="dataText">-</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="state">State:</label>
-                                <div class="data-box">
-                                    <span id="state" class="dataText">-</span>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="country">Country:</label>
-                                <div class="data-box">
-                                    <span id="country" class="dataText">-</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Professional Summary -->
-                    <div class="form-step" data-step="2">
-                        <!-- Primary Work Experience Section -->
-                        <div class="experience-section-header" style="margin-bottom: 1rem;">
-                            <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0.5rem;">Primary Work Experience</h3>
-                        </div>
-
-                        <div class="experience-item primary-experience">
-                            <div class="form-group">
-                                <label style="color: white;">Job Title</label>
-                                <div class="data-box">
-                                    <span id="jobTitle" class="dataText" style="color: white;">-</span>
-                                </div>
+                        <div class="form-step active" data-step="1">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h2>Personal Information</h2>
+                                <button type="button" id="editPersonalInfoBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
                             </div>
                             
-                            <div class="form-group">
-                                <label style="color: white;">Company</label>
-                                <div class="data-box">
-                                    <span id="companyName" class="dataText" style="color: white;">-</span>
+                            <!-- View Personal Information -->
+                            <div id="personalInfoView">
+                                <!-- First Name, Middle Name, Last Name -->
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label for="firstName">First Name:</label>
+                                        <div class="data-box">
+                                            <span id="firstName" class="dataText">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="middleName">Middle Name:</label>
+                                        <div class="data-box">
+                                            <span id="middleName" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                            
+                                    <div class="form-group">
+                                        <label for="lastName">Last Name:</label>
+                                        <div class="data-box">
+                                            <span id="lastName" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Email, Phone Number -->
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label for="emailAddress">Email Address:</label>
+                                        <div class="data-box">
+                                            <span id="email" class="dataText"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="phone">Phone Number:</label>
+                                        <div class="data-box">
+                                            <span id="phone" class="dataText"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Address -->
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label for="addressOne">Address Line 1:</label>
+                                        <div class="data-box">
+                                            <span id="addressOne" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="addressTwo">Address Line 2</label>
+                                        <div class="data-box">
+                                            <span id="addressTwo" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- City, State, Country -->
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label for="city">City:</label>
+                                        <div class="data-box">
+                                            <span id="city" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="state">State:</label>
+                                        <div class="data-box">
+                                            <span id="state" class="dataText">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="country">Country:</label>
+                                        <div class="data-box">
+                                            <span id="country" class="dataText">-</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-grid-two">
-                                <div class="form-group">
-                                    <label style="color: white;">Start Date</label>
-                                    <div class="data-box">
-                                        <span id="startDate" class="dataText" style="color: white;">-</span>
+                            <!-- Edit Personal Information -->
+                            <div id="personalInfoEdit" style="display: none;">
+                                <!-- First Name, Middle Name, Last Name -->
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label>First Name *</label>
+                                        <input type="text" id="editFirstName" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Middle Name</label>
+                                        <input type="text" id="editMiddleName" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Last Name *</label>
+                                        <input type="text" id="editLastName" class="form-input" required>
                                     </div>
                                 </div>
+                                
+                                <!-- Email, Phone Number -->
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label>Email *</label>
+                                        <input type="email" id="editEmail" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone *</label>
+                                        <input type="tel" id="editPhone" class="form-input" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Address -->
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label>Address Line 1 *</label>
+                                        <input type="text" id="editAddressOne" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Address Line 2</label>
+                                        <input type="text" id="editAddressTwo" class="form-input">
+                                    </div>
+                                </div>
+                                
+                                <!-- City, State, Country -->
+                                <div class="form-grid-three">
+                                    <div class="form-group">
+                                        <label>City *</label>
+                                        <input type="text" id="editCity" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>State *</label>
+                                        <input type="text" id="editState" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Country *</label>
+                                        <input type="text" id="editCountry" class="form-input" required>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="savePersonalInfoBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelPersonalInfoBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    <!-- Step 2: Professional Summary -->
+                        <div class="form-step" data-step="2">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h3 style="color: white; font-size: 1.25rem;">Primary Work Experience</h3>
+                                <button type="button" id="editWorkExpBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
+                            </div>
+
+                            <!-- VIEW MODE -->
+                            <div id="workExpView" class="experience-item primary-experience">
                                 <div class="form-group">
-                                    <label style="color: white;">End Date</label>
+                                    <label style="color: white;">Job Title</label>
                                     <div class="data-box">
-                                        <span id="endDate" class="dataText" style="color: white;">-</span>
+                                        <span id="jobTitle" class="dataText" style="color: white;">-</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Company</label>
+                                    <div class="data-box">
+                                        <span id="companyName" class="dataText" style="color: white;">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label style="color: white;">Start Date</label>
+                                        <div class="data-box">
+                                            <span id="startDate" class="dataText" style="color: white;">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: white;">End Date</label>
+                                        <div class="data-box">
+                                            <span id="endDate" class="dataText" style="color: white;">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Currently Working</label>
+                                    <div class="data-box">
+                                        <span id="currentlyWorkingStatus" class="dataText" style="color: white;">-</span>
+                                    </div>
+                                </div>
+                            
+                                <div class="form-group">
+                                    <label style="color: white;">Professional Summary</label>
+                                    <div class="data-box" style="min-height: 80px;">
+                                        <span id="professionalSummary" class="dataText" style="color: white; white-space: pre-wrap;">-</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label style="color: white;">Currently Working</label>
-                                <div class="data-box">
-                                    <span id="currentlyWorkingStatus" class="dataText" style="color: white;">-</span>
+                            <!-- EDIT MODE (hidden by default) -->
+                            <div id="workExpEdit" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: white;">Job Title *</label>
+                                    <input type="text" id="editJobTitle" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Company *</label>
+                                    <input type="text" id="editCompanyName" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label style="color: white;">Start Date *</label>
+                                        <input type="date" id="editStartDate" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: white;">End Date</label>
+                                        <input type="date" id="editEndDate" class="form-input" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="editCurrentlyWorking" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>I currently work here</span>
+                                    </label>
+                                </div>
+                            
+                                <div class="form-group">
+                                    <label style="color: white;">Professional Summary *</label>
+                                    <textarea id="editProfessionalSummary" rows="5" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; resize: vertical;"></textarea>
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="saveWorkExpBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelWorkExpBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
-                        
-                            <div class="form-group">
-                                <label style="color: white;">Professional Summary</label>
-                                <div class="data-box" style="min-height: 80px;">
-                                    <span id="professionalSummary" class="dataText" style="color: white; white-space: pre-wrap;">-</span>
+
+                            <!-- Additional Work Experiences Section -->
+                            <div id="additionalExperiencesSection" style="margin-top: 2rem; display: none;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0;">Additional Work Experiences</h3>
+                                    <button type="button" id="addNewExpBtn" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                                        Add Experience
+                                    </button>
+                                </div>
+                                <div id="additionalExperiencesContainer">
+                                    <!-- Additional experiences will be populated here -->
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Additional Work Experiences Section -->
-                        <div id="additionalExperiencesSection" style="margin-top: 2rem; display: none;">
-                            <div style="margin-bottom: 1rem;">
-                                <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0.5rem;">Additional Work Experiences</h3>
-                            </div>
-                            <div id="additionalExperiencesContainer">
-                                <!-- Additional experiences will be populated here -->
+                        <!-- Add Experience Modal -->
+                        <div id="addExpModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto; padding: 2rem;">
+                            <div style="max-width: 600px; margin: 0 auto; background: #1a1a2e; border-radius: 12px; padding: 2rem;">
+                                <h3 style="color: white; margin-bottom: 1.5rem;">Add Work Experience</h3>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Job Title *</label>
+                                    <input type="text" id="newExpJobTitle" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Company *</label>
+                                    <input type="text" id="newExpCompany" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+                                
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label style="color: white;">Start Date *</label>
+                                        <input type="date" id="newExpStartDate" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: white;">End Date</label>
+                                        <input type="date" id="newExpEndDate" class="form-input" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="newExpCurrentlyWorking" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>I currently work here</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Job Description</label>
+                                    <textarea id="newExpDescription" rows="4" class="form-input" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; resize: vertical;"></textarea>
+                                </div>
+                                
+                                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                                    <button type="button" id="saveNewExpBtn" class="btn btn-primary">
+                                        Add Experience
+                                    </button>
+                                    <button type="button" id="cancelNewExpBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Step 3: Skills -->
-                    <div class="form-step" data-step="3">
-                        <h2>Skills & Expertise</h2>
-                    
-                        <div class="form-group">
-                            <label>Enter Skills</label>
-                            <div class="tags-input-container">
-                                <div class="tags-list" id="skillsTags"></div>
+                        <!-- Edit Experience Modal -->
+                        <div id="editExpModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto; padding: 2rem;">
+                            <div style="max-width: 600px; margin: 0 auto; background: #1a1a2e; border-radius: 12px; padding: 2rem;">
+                                <h3 style="color: white; margin-bottom: 1.5rem;">Edit Work Experience</h3>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Job Title *</label>
+                                    <input type="text" id="editExpJobTitle" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Company *</label>
+                                    <input type="text" id="editExpCompany" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                </div>
+                                
+                                <div class="form-grid-two">
+                                    <div class="form-group">
+                                        <label style="color: white;">Start Date *</label>
+                                        <input type="date" id="editExpStartDate" class="form-input" required style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label style="color: white;">End Date</label>
+                                        <input type="date" id="editExpEndDate" class="form-input" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="editExpCurrentlyWorking" style="width: 18px; height: 18px; cursor: pointer;">
+                                        <span>I currently work here</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Job Description</label>
+                                    <textarea id="editExpDescription" rows="4" class="form-input" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; resize: vertical;"></textarea>
+                                </div>
+                                
+                                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                                    <button type="button" id="saveEditExpBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelEditExpBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    <!-- Step 3: Skills --> 
+                        <div class="form-step" data-step="3">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h2>Skills & Expertise</h2>
+                                <button type="button" id="editSkillsBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
+                            </div>
+
+                            <!-- VIEW MODE -->
+                            <div id="skillsView">
+                                <div class="form-group">
+                                    <label>Skills</label>
                                     <div class="data-box">
                                         <span id="skillsDisplay" class="dataText">-</span>
                                     </div>
                                 </div>
-                            </div>
-                    
-                            <div class="form-group">
-                                <label for="linkedin">LinkedIn Profile</label>
-                                <div class="data-box">
-                                    <span id="linkedin" class="dataText">-</span>
+
+                                <div class="form-group">
+                                    <label for="linkedin">LinkedIn Profile</label>
+                                    <div class="data-box">
+                                        <span id="linkedin" class="dataText">-</span>
+                                    </div>
                                 </div>
-                            </div>
-                    
-                            <div class="form-group">
-                                <label for="github">GitHub Profile</label>
-                                <div class="data-box">
-                                    <span id="github" class="dataText">-</span>
+
+                                <div class="form-group">
+                                    <label for="github">GitHub Profile</label>
+                                    <div class="data-box">
+                                        <span id="github" class="dataText">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="website">Website URL</label>
+                                    <div class="data-box">
+                                        <span id="website" class="dataText">-</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="website">Enter Website URL</label>
-                                <div class="data-box">
-                                    <span id="website" class="dataText">-</span>
+                            <!-- EDIT MODE (hidden by default) -->
+                            <div id="skillsEdit" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: white;">Skills</label>
+                                    <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.5rem; min-height: 100px;">
+                                        <div id="editSkillsTags" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                            <!-- Skills tags will be displayed here -->
+                                        </div>
+                                        <div style="display: flex; gap: 0.5rem;">
+                                            <input 
+                                                type="text" 
+                                                id="editSkillInput" 
+                                                placeholder="Type skill and press Enter" 
+                                                style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem; border-radius: 4px;"
+                                            >
+                                            <button type="button" id="addSkillBtn" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small style="color: rgba(255,255,255,0.6); margin-top: 0.5rem; display: block;">Press Enter or click Add to add a skill</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">LinkedIn Profile URL</label>
+                                    <input 
+                                        type="url" 
+                                        id="editLinkedin" 
+                                        class="form-input" 
+                                        placeholder="https://linkedin.com/in/yourprofile"
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">GitHub Profile URL</label>
+                                    <input 
+                                        type="url" 
+                                        id="editGithub" 
+                                        class="form-input" 
+                                        placeholder="https://github.com/yourusername"
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Website URL</label>
+                                    <input 
+                                        type="url" 
+                                        id="editWebsite" 
+                                        class="form-input" 
+                                        placeholder="https://yourwebsite.com"
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="saveSkillsBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelSkillsBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
                                 </div>
                             </div>
-                    </div>
+                        </div>
 
                     <!-- Step 4: Job Preferences -->
-                    <div class="form-step" data-step="4">
-                        <h2>Job Preferences</h2>
+                        <div class="form-step" data-step="4">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h2>Job Preferences</h2>
+                                <button type="button" id="editJobPrefBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
+                            </div>
 
-                        <div class="form-group">
-                            <label style="color: white;">Work Type</label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="workType" value="remote" id="workType-remote">
-                                    <span style="color: white;">Remote Only</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="workType" value="hybrid" id="workType-hybrid">
-                                    <span style="color: white;">Hybrid</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="workType" value="onsite" id="workType-onsite">
-                                    <span style="color: white;">On-site</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="workType" value="flexible" id="workType-flexible">
-                                    <span style="color: white;">Flexible</span>
-                                </label>
+                            <!-- VIEW MODE -->
+                            <div id="jobPrefView">
+                                <div class="form-group">
+                                    <label style="color: white;">Work Type</label>
+                                    <div class="data-box">
+                                        <span id="workTypeDisplay" class="dataText">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="expectedSalary">Expected Salary (Annual)</label>
+                                    <div class="data-box">
+                                        <span id="salary" class="dataText">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="preferredLocations">Preferred Locations</label>
+                                    <div class="data-box">
+                                        <span id="preferredLocations" class="dataText">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- EDIT MODE (hidden by default) -->
+                            <div id="jobPrefEdit" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: white;">Work Type</label>
+                                    <div class="radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editWorkType" value="remote" id="editWorkType-remote" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">Remote Only</span>
+                                        </label>
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editWorkType" value="hybrid" id="editWorkType-hybrid" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">Hybrid</span>
+                                        </label>
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editWorkType" value="onsite" id="editWorkType-onsite" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">On-site</span>
+                                        </label>
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editWorkType" value="flexible" id="editWorkType-flexible" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">Flexible</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Expected Salary (Annual)</label>
+                                    <input 
+                                        type="text" 
+                                        id="editSalary" 
+                                        class="form-input" 
+                                        placeholder="e.g., $80,000 or 80000"
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Preferred Locations</label>
+                                    <input 
+                                        type="text" 
+                                        id="editPreferredLocations" 
+                                        class="form-input" 
+                                        placeholder="e.g., New York, San Francisco, Remote"
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="saveJobPrefBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelJobPrefBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    
-                        <div class="form-group">
-                            <label for="expectedSalary">Expected Salary (Annual)</label>
-                            <div class="data-box">
-                                <span id="salary" class="dataText">-</span>
-                            </div>
-                        </div>
-                    
-                        <div class="form-group">
-                            <label for="preferredLocations">Preferred Locations</label>
-                            <div class="data-box">
-                                <span id="preferredLocations" class="dataText">-</span>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Step 5: Abroad Authorization -->
-                    <div class="form-step" data-step="5">
-                        <h2>Abroad Authorization</h2>
-                        <p class="step-description">This form is for the people applying for jobs abroad.</p>
+                        <div class="form-step" data-step="5">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h2>Abroad Authorization</h2>
+                                <button type="button" id="editAuthBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
+                            </div>
+                            <p class="step-description" style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">This form is for the people applying for jobs abroad.</p>
 
-                        <div class="form-group">
-                            <label>Are you legally authorized to work abroad?</label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="authorized" value="yes" required>
-                                    <span>Yes</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="authorized" value="no">
-                                    <span>No</span>
-                                </label>
+                            <!-- VIEW MODE -->
+                            <div id="authView">
+                                <div class="form-group">
+                                    <label style="color: white;">Are you legally authorized to work abroad?</label>
+                                    <div class="data-box">
+                                        <span id="authorizedDisplay" class="dataText">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Do you require visa sponsorship now/future?</label>
+                                    <div class="data-box">
+                                        <span id="sponsorshipDisplay" class="dataText">-</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="visaType">What type of visa sponsorship do you require now/future?</label>
+                                    <div class="data-box">
+                                        <span id="visaType" class="dataText">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- EDIT MODE (hidden by default) -->
+                            <div id="authEdit" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: white;">Are you legally authorized to work abroad?</label>
+                                    <div class="radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editAuthorized" value="yes" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">Yes</span>
+                                        </label>
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editAuthorized" value="no" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">No</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">Do you require visa sponsorship now/future?</label>
+                                    <div class="radio-group" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editSponsorship" value="yes" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">Yes</span>
+                                        </label>
+                                        <label class="radio-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                            <input type="radio" name="editSponsorship" value="no" style="width: 18px; height: 18px; cursor: pointer;">
+                                            <span style="color: white;">No</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label style="color: white;">What type of visa sponsorship do you require now/future?</label>
+                                    <input 
+                                        type="text" 
+                                        id="editVisaType" 
+                                        class="form-input" 
+                                        placeholder="e.g., H-1B, L-1, O-1, etc."
+                                        style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%;"
+                                    >
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="saveAuthBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelAuthBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label>Do you require visa sponsorship now/future?</label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="sponsorship" value="yes" required>
-                                    <span>Yes</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="sponsorship" value="no">
-                                    <span>No</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="visaType">What type of visa sponsorship do you require now/future?</label>
-                            <div class="data-box">
-                                <span id="visaType" class="dataText">-</span>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Step 6: Upload Documents -->
-                    <div class="form-step" data-step="6">
-                        <h2>Upload Your Documents</h2>
+                        <div class="form-step" data-step="6">
+                            <h2>Upload Your Documents</h2>
 
-                        <!-- RESUME SECTION -->
-                        <div class="form-group">
-                            <label style="color: white;">Resume</label>
-                            <div id="resumeSection">
-                                <!-- Loading state -->
-                                <div id="resumeLoading" style="display: none; color: rgba(255,255,255,0.7); padding: 1rem; text-align: center;">
-                                    <span>Loading resume information...</span>
-                                </div>
-                                
-                                <!-- Resume found -->
-                                <div id="uploadedFile" style="display: none; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <div style="flex: 1;">
-                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                                <div class="file-icon">📄</div>
-                                                <span id="fileName" style="color: white; font-weight: 500; font-size: 16px;"></span>
+                            <!-- RESUME SECTION -->
+                            <div class="form-group">
+                                <label style="color: white;">Resume</label>
+                                <div id="resumeSection">
+                                    <!-- Loading state -->
+                                    <div id="resumeLoading" style="display: none; color: rgba(255,255,255,0.7); padding: 1rem; text-align: center;">
+                                        <span>Loading resume information...</span>
+                                    </div>
+                                    
+                                    <!-- Resume found -->
+                                    <div id="uploadedFile" style="display: none; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <div style="flex: 1;">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                    <div class="file-icon">📄</div>
+                                                    <span id="fileName" style="color: white; font-weight: 500; font-size: 16px;"></span>
+                                                </div>
+                                                <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">
+                                                    <span id="fileSize"></span> • <span id="fileUploadDate"></span>
+                                                </div>
                                             </div>
-                                            <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">
-                                                <span id="fileSize"></span> • <span id="fileUploadDate"></span>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button type="button" id="viewResumeBtn" class="icon-button" title="View Resume" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                        <circle cx="12" cy="12" r="3"/>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" id="downloadResumeBtn" class="icon-button" title="Download Resume" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                        <polyline points="7 10 12 15 17 10"/>
+                                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" id="replaceResumeBtn" class="icon-button" title="Replace Resume" style="background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-size: 0.875rem;">
+                                                    Replace
+                                                </button>
                                             </div>
-                                        </div>
-                                        <div style="display: flex; gap: 0.5rem;">
-                                            <button type="button" id="viewResumeBtn" class="icon-button" title="View Resume" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </button>
-                                            <button type="button" id="downloadResumeBtn" class="icon-button" title="Download Resume" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                    <polyline points="7 10 12 15 17 10"/>
-                                                    <line x1="12" y1="15" x2="12" y2="3"/>
-                                                </svg>
-                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <!-- No resume message -->
-                                <div id="noResumeMessage" style="display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 0.5rem;">
-                                    No resume uploaded
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- COVER LETTER SECTION -->
-                        <div class="form-group" style="margin-top: 1.5rem;">
-                            <label style="color: white;">Cover Letter</label>
-                            <div id="coverLetterSection">
-                                <!-- Loading state -->
-                                <div id="coverLetterLoading" style="display: none; color: rgba(255,255,255,0.7); padding: 1rem; text-align: center;">
-                                    <span>Loading cover letter information...</span>
-                                </div>
-                                
-                                <!-- Cover letter found -->
-                                <div id="uploadedFileCover" style="display: none; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <div style="flex: 1;">
-                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                                <div class="file-icon">📄</div>
-                                                <span id="fileNameCover" style="color: white; font-weight: 500; font-size: 16px;"></span>
-                                            </div>
-                                            <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">
-                                                <span id="fileSizeCover"></span> • <span id="fileCoverUploadDate"></span>
-                                            </div>
-                                        </div>
-                                        <div style="display: flex; gap: 0.5rem;">
-                                            <button type="button" id="viewCoverLetterBtn" class="icon-button" title="View Cover Letter" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </button>
-                                            <button type="button" id="downloadCoverLetterBtn" class="icon-button" title="Download Cover Letter" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                    <polyline points="7 10 12 15 17 10"/>
-                                                    <line x1="12" y1="15" x2="12" y2="3"/>
-                                                </svg>
-                                            </button>
-                                        </div>
+                                    
+                                    <!-- No resume message -->
+                                    <div id="noResumeMessage" style="display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 0.5rem;">
+                                        <p style="margin-bottom: 0.5rem;">No resume uploaded</p>
+                                        <button type="button" id="uploadResumeBtn" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-top: 0.5rem;">
+                                            Upload Resume
+                                        </button>
                                     </div>
                                 </div>
-                                
-                                <!-- No cover letter message -->
-                                <div id="noCoverLetterMessage" style="display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 0.5rem;">
-                                    No cover letter uploaded
+                            </div>
+
+                            <!-- COVER LETTER SECTION -->
+                            <div class="form-group" style="margin-top: 1.5rem;">
+                                <label style="color: white;">Cover Letter</label>
+                                <div id="coverLetterSection">
+                                    <!-- Loading state -->
+                                    <div id="coverLetterLoading" style="display: none; color: rgba(255,255,255,0.7); padding: 1rem; text-align: center;">
+                                        <span>Loading cover letter information...</span>
+                                    </div>
+                                    
+                                    <!-- Cover letter found -->
+                                    <div id="uploadedFileCover" style="display: none; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; margin-top: 0.5rem;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                                            <div style="flex: 1;">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                    <div class="file-icon">📄</div>
+                                                    <span id="fileNameCover" style="color: white; font-weight: 500; font-size: 16px;"></span>
+                                                </div>
+                                                <div style="color: rgba(255,255,255,0.5); font-size: 0.875rem;">
+                                                    <span id="fileSizeCover"></span> • <span id="fileCoverUploadDate"></span>
+                                                </div>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button type="button" id="viewCoverLetterBtn" class="icon-button" title="View Cover Letter" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                        <circle cx="12" cy="12" r="3"/>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" id="downloadCoverLetterBtn" class="icon-button" title="Download Cover Letter" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                        <polyline points="7 10 12 15 17 10"/>
+                                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                                    </svg>
+                                                </button>
+                                                <button type="button" id="replaceCoverLetterBtn" class="icon-button" title="Replace Cover Letter" style="background: rgba(234, 179, 8, 0.2); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; font-size: 0.875rem;">
+                                                    Replace
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- No cover letter message -->
+                                    <div id="noCoverLetterMessage" style="display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: rgba(255,255,255,0.7); text-align: center; margin-top: 0.5rem;">
+                                        <p style="margin-bottom: 0.5rem;">No cover letter uploaded</p>
+                                        <button type="button" id="uploadCoverLetterBtn" class="btn btn-primary" style="padding: 0.5rem 1rem; margin-top: 0.5rem;">
+                                            Upload Cover Letter
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
+                            <!-- Hidden file inputs -->
+                            <input type="file" id="resumeFileInput" accept=".pdf,.doc,.docx" style="display: none;">
+                            <input type="file" id="coverLetterFileInput" accept=".pdf,.doc,.docx" style="display: none;">
                         </div>
-                    </div>
 
                     <!-- Step 7: Additional Questions -->
-                    <div class="form-step" data-step="7">
-                        <h2>Additional Questions</h2>  
-                        <p class="step-description">Fill out the below self-identity questions.</p>  
-                        
-                        <div class="form-group">
-                            <label>Gender</label>
-                            <div class="data-box">
-                                <span id="genderInfo" class="dataText">-</span>
+                        <div class="form-step" data-step="7">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h2>Additional Questions</h2>
+                                <button type="button" id="editAdditionalBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                    Edit
+                                </button>
                             </div>
-                        </div> 
-                        
-                        <div class="form-group">
-                            <label>Hispanic/Latino</label>
-                            <div class="data-box">
-                                <span id="hispanicLatinoInfo" class="dataText">-</span>
-                            </div>
-                        </div> 
+                            <p class="step-description" style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Fill out the below self-identity questions.</p>
 
-                        <div class="form-group">
-                            <label>Race</label>
-                            <div class="data-box">
-                                <span id="raceInfo" class="dataText">-</span>
-                            </div>
-                        </div> 
+                            <!-- VIEW MODE -->
+                            <div id="additionalView">
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <div class="data-box">
+                                        <span id="genderInfo" class="dataText">-</span>
+                                    </div>
+                                </div> 
+                                
+                                <div class="form-group">
+                                    <label>Hispanic/Latino</label>
+                                    <div class="data-box">
+                                        <span id="hispanicLatinoInfo" class="dataText">-</span>
+                                    </div>
+                                </div> 
 
-                        <div class="form-group">
-                            <label>Veteran Status</label>
-                            <div class="data-box">
-                                <span id="veteranInfo" class="dataText">-</span>
-                            </div>
-                        </div> 
+                                <div class="form-group">
+                                    <label>Race</label>
+                                    <div class="data-box">
+                                        <span id="raceInfo" class="dataText">-</span>
+                                    </div>
+                                </div> 
 
-                        <div class="form-group">
-                            <label>Disability Status</label>
-                            <div class="data-box">
-                                <span id="disabilityInfo" class="dataText">-</span>
+                                <div class="form-group">
+                                    <label>Veteran Status</label>
+                                    <div class="data-box">
+                                        <span id="veteranInfo" class="dataText">-</span>
+                                    </div>
+                                </div> 
+
+                                <div class="form-group">
+                                    <label>Disability Status</label>
+                                    <div class="data-box">
+                                        <span id="disabilityInfo" class="dataText">-</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div> 
-                    </div>
+
+                            <!-- EDIT MODE (hidden by default) -->
+                            <div id="additionalEdit" style="display: none;">
+                                <div class="form-group">
+                                    <label style="color: white;">Select Gender</label>
+                                    <select id="editGender" name="gender" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; cursor: pointer;">
+                                        <option value="" disabled>Select your option</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="otherGender">Decline To Self Identify</option>
+                                    </select>
+                                </div> 
+                                
+                                <div class="form-group">
+                                    <label style="color: white;">Are you Hispanic/Latino?</label>
+                                    <select id="editHispanicLatino" name="hispanicLatino" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; cursor: pointer;">
+                                        <option value="" disabled>Select your option</option>
+                                        <option value="yes">Yes</option>
+                                        <option value="no">No</option>
+                                        <option value="otherHisLat">Decline To Self Identify</option>
+                                    </select>
+                                </div> 
+
+                                <div class="form-group">
+                                    <label style="color: white;">Please Identify Your Race</label>
+                                    <select id="editRace" name="race" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; cursor: pointer;">
+                                        <option value="" disabled>Select your option</option>
+                                        <option value="american">American Indian or Alaskan Native</option>
+                                        <option value="asian">Asian</option>
+                                        <option value="black">Black or African American</option>
+                                        <option value="white">White</option>
+                                        <option value="native">Native Hawaiian or Other Pacific Islander</option>
+                                        <option value="twoOrMore">Two or More Races</option>
+                                        <option value="otherRace">Decline To Self Identify</option>
+                                    </select>
+                                </div> 
+
+                                <div class="form-group">
+                                    <label style="color: white;">Select Veteran Status</label>
+                                    <select id="editVeteran" name="veteran" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; cursor: pointer;">
+                                        <option value="" disabled>Select your option</option>
+                                        <option value="notVeteran">I am not a protected veteran</option>
+                                        <option value="iVeteran">I identify as one or more of the classification of a protected veteran</option>
+                                        <option value="otherVeteran">Decline To Self Identify</option>
+                                    </select>
+                                </div> 
+
+                                <div class="form-group">
+                                    <label style="color: white;">Select Disability Status</label>
+                                    <select id="editDisability" name="disability" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem; border-radius: 6px; width: 100%; cursor: pointer;">
+                                        <option value="" disabled>Select your option</option>
+                                        <option value="yesDisability">Yes, I have a disability, or have had one in the past</option>
+                                        <option value="noDisability">No, I do not have a disability and have not had one in the past</option>
+                                        <option value="otherDisability">Decline To Self Identify</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" id="saveAdditionalBtn" class="btn btn-primary">
+                                        Save Changes
+                                    </button>
+                                    <button type="button" id="cancelAdditionalBtn" class="btn btn-secondary">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                     <!-- Navigation Buttons -->
-                    <div class="form-navigation">
-                        <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
-                            ← Previous
-                        </button>
-                        
-                        <button type="button" class="btn btn-primary" id="nextBtn">
-                            Next →
-                        </button>
-                        
-                        <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
-                            <a href="./dashboard.html" style="text-decoration: none; color: white;">
-                                Back To Dashboard
-                            </a>
-                        </button>
-                    </div>
+                        <div class="form-navigation">
+                            <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                                ← Previous
+                            </button>
+                            
+                            <button type="button" class="btn btn-primary" id="nextBtn">
+                                Next →
+                            </button>
+                            
+                            <button type="submit" class="btn btn-success" id="submitBtn" style="display: none;">
+                                <a href="./dashboard.html" style="text-decoration: none; color: white;">
+                                    Back To Dashboard
+                                </a>
+                            </button>
+                        </div>
                 </form>
             </div>
         </div>

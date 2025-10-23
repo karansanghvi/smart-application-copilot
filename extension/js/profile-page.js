@@ -1,15 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Load user profile from Chrome storage
     chrome.storage.local.get(['userProfile', 'profileId'], (result) => {
         if (result.userProfile) {
             displayUserProfile(result.userProfile);
         } else {
-            // If no profile, redirect to profile setup
             window.location.href = 'onboarding.html';
         }
     });
 
-    // Button event listeners
     document.getElementById('editProfileBtn')?.addEventListener('click', () => {
         window.location.href = 'onboarding.html';
     });
@@ -28,7 +25,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+let currentProfile = null;
+let currentProfileId = null;
+let editingExpIndex = null;
+let editingSkills = [];
+
+// Display User Profile Data
 function displayUserProfile(profile) {
+    // Store profile globally
+    currentProfile = profile;
+    
+    // Get profile ID
+    chrome.storage.local.get(['profileId'], (result) => {
+        currentProfileId = result.profileId;
+    });
+    
     // Header
     const userNameEl = document.getElementById('userName');
     if (userNameEl) {
@@ -155,12 +166,46 @@ function displayUserProfile(profile) {
         }
     }
 
-    // Job Preferences - Work Type (Select Radio Button)
+    // Job Preferences - Work Type Display (for view mode)
+    const workTypeDisplay = document.getElementById('workTypeDisplay');
+    if (workTypeDisplay) {
+        const workTypeMap = {
+            'remote': 'Remote Only',
+            'hybrid': 'Hybrid',
+            'onsite': 'On-site',
+            'flexible': 'Flexible'
+        };
+        workTypeDisplay.textContent = workTypeMap[profile.workType] || 'Not specified';
+    }
+    
+    // Job Preferences - Work Type Radio Button (for old view mode with radio buttons)
     const workTypeValue = profile.workType;
     if (workTypeValue) {
         const workTypeRadio = document.querySelector(`input[name="workType"][value="${workTypeValue}"]`);
         if (workTypeRadio) {
             workTypeRadio.checked = true;
+        }
+    }
+
+    // Abroad Authorization Display
+    const authorizedDisplay = document.getElementById('authorizedDisplay');
+    if (authorizedDisplay) {
+        authorizedDisplay.textContent = profile.authorized === 'yes' ? 'Yes' : (profile.authorized === 'no' ? 'No' : 'Not specified');
+    }
+
+    const sponsorshipDisplay = document.getElementById('sponsorshipDisplay');
+    if (sponsorshipDisplay) {
+        sponsorshipDisplay.textContent = profile.sponsorship === 'yes' ? 'Yes' : (profile.sponsorship === 'no' ? 'No' : 'Not specified');
+    }
+
+    const visaTypeEl = document.getElementById('visaType');
+    if (visaTypeEl) {
+        if (profile.visaSponsorship && profile.visaSponsorship.trim()) {
+            visaTypeEl.textContent = profile.visaSponsorship;
+            visaTypeEl.style.color = 'white';
+        } else {
+            visaTypeEl.textContent = 'Not applicable';
+            visaTypeEl.style.color = '#999';
         }
     }
 
@@ -180,6 +225,920 @@ function displayUserProfile(profile) {
     displayUploadedDocuments(profile);
 }
 
+// Edit Personal Info
+document.getElementById('editPersonalInfoBtn')?.addEventListener('click', () => {
+    enterEditMode('personalInfo');
+});
+
+document.getElementById('savePersonalInfoBtn')?.addEventListener('click', () => {
+    savePersonalInfo();
+});
+
+document.getElementById('cancelPersonalInfoBtn')?.addEventListener('click', () => {
+    exitEditMode('personalInfo');
+});
+
+// Edit Primary and Additional Work Experience
+document.getElementById('editWorkExpBtn')?.addEventListener('click', () => {
+    enterEditMode('workExp');
+});
+
+document.getElementById('saveWorkExpBtn')?.addEventListener('click', () => {
+    saveWorkExp();
+});
+
+document.getElementById('cancelWorkExpBtn')?.addEventListener('click', () => {
+    exitEditMode('workExp');
+});
+
+document.getElementById('editCurrentlyWorking')?.addEventListener('change', (e) => {
+    const endDateInput = document.getElementById('editEndDate');
+    if (e.target.checked) {
+        endDateInput.value = '';
+        endDateInput.disabled = true;
+        endDateInput.style.opacity = '0.5';
+    } else {
+        endDateInput.disabled = false;
+        endDateInput.style.opacity = '1';
+    }
+});
+
+document.getElementById('addNewExpBtn')?.addEventListener('click', () => {
+    document.getElementById('addExpModal').style.display = 'block';
+
+    document.getElementById('newExpJobTitle').value = '';
+    document.getElementById('newExpCompany').value = '';
+    document.getElementById('newExpStartDate').value = '';
+    document.getElementById('newExpEndDate').value = '';
+    document.getElementById('newExpCurrentlyWorking').checked = false;
+    document.getElementById('newExpDescription').value = '';
+});
+
+document.getElementById('cancelNewExpBtn')?.addEventListener('click', () => {
+    document.getElementById('addExpModal').style.display = 'none';
+});
+
+document.getElementById('saveNewExpBtn')?.addEventListener('click', () => {
+    addNewExperience();
+});
+
+document.getElementById('newExpCurrentlyWorking')?.addEventListener('change', (e) => {
+    const endDateInput = document.getElementById('newExpEndDate');
+    if (e.target.checked) {
+        endDateInput.value = '';
+        endDateInput.disabled = true;
+        endDateInput.style.opacity = '0.5';
+    } else {
+        endDateInput.disabled = false;
+        endDateInput.style.opacity = '1';
+    }
+});
+
+document.getElementById('editExpCurrentlyWorking')?.addEventListener('change', (e) => {
+    const endDateInput = document.getElementById('editExpEndDate');
+    if (e.target.checked) {
+        endDateInput.value = '';
+        endDateInput.disabled = true;
+        endDateInput.style.opacity = '0.5';
+    } else {
+        endDateInput.disabled = false;
+        endDateInput.style.opacity = '1';
+    }
+});
+
+document.getElementById('cancelEditExpBtn')?.addEventListener('click', () => {
+    document.getElementById('editExpModal').style.display = 'none';
+    editingExpIndex = null;
+});
+
+document.getElementById('saveEditExpBtn')?.addEventListener('click', () => {
+    saveEditedExperience();
+});
+
+// Edit Skills & Expertise
+document.getElementById('editSkillsBtn')?.addEventListener('click', () => {
+    enterEditMode('skills');
+});
+
+document.getElementById('saveSkillsBtn')?.addEventListener('click', () => {
+    saveSkills();
+});
+
+document.getElementById('cancelSkillsBtn')?.addEventListener('click', () => {
+    exitEditMode('skills');
+});
+
+document.getElementById('addSkillBtn')?.addEventListener('click', () => {
+    addSkillToEdit();
+});
+
+document.getElementById('editSkillInput')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addSkillToEdit();
+    }
+});
+
+// Edit Job Preferences
+document.getElementById('editJobPrefBtn')?.addEventListener('click', () => {
+    enterEditMode('jobPref');
+});
+
+document.getElementById('saveJobPrefBtn')?.addEventListener('click', () => {
+    saveJobPref();
+});
+
+document.getElementById('cancelJobPrefBtn')?.addEventListener('click', () => {
+    exitEditMode('jobPref');
+});
+
+// Edit Abroad Authorization
+document.getElementById('editAuthBtn')?.addEventListener('click', () => {
+    enterEditMode('auth');
+});
+
+document.getElementById('saveAuthBtn')?.addEventListener('click', () => {
+    saveAuth();
+});
+
+document.getElementById('cancelAuthBtn')?.addEventListener('click', () => {
+    exitEditMode('auth');
+});
+
+// File upload handlers
+document.getElementById('uploadResumeBtn')?.addEventListener('click', () => {
+    document.getElementById('resumeFileInput').click();
+});
+
+document.getElementById('replaceResumeBtn')?.addEventListener('click', () => {
+    document.getElementById('resumeFileInput').click();
+});
+
+document.getElementById('uploadCoverLetterBtn')?.addEventListener('click', () => {
+    document.getElementById('coverLetterFileInput').click();
+});
+
+document.getElementById('replaceCoverLetterBtn')?.addEventListener('click', () => {
+    document.getElementById('coverLetterFileInput').click();
+});
+
+document.getElementById('resumeFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        await uploadDocument(file, 'resume');
+    }
+    e.target.value = '';
+});
+
+document.getElementById('coverLetterFileInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        await uploadDocument(file, 'coverLetter');
+    }
+    e.target.value = '';
+});
+
+// Edit Additional Questions
+document.getElementById('editAdditionalBtn')?.addEventListener('click', () => {
+    enterEditMode('additional');
+});
+
+document.getElementById('saveAdditionalBtn')?.addEventListener('click', () => {
+    saveAdditional();
+});
+
+document.getElementById('cancelAdditionalBtn')?.addEventListener('click', () => {
+    exitEditMode('additional');
+});
+
+// Enter Edit Mode
+function enterEditMode(section) {
+    if (section === 'personalInfo') {
+        document.getElementById('personalInfoView').style.display = 'none';
+        document.getElementById('personalInfoEdit').style.display = 'block';
+        
+        document.getElementById('editFirstName').value = currentProfile.firstName || '';
+        document.getElementById('editMiddleName').value = currentProfile.middleName || '';
+        document.getElementById('editLastName').value = currentProfile.lastName || '';
+        document.getElementById('editEmail').value = currentProfile.email || '';
+        document.getElementById('editPhone').value = currentProfile.phone || '';
+        document.getElementById('editAddressOne').value = currentProfile.addressOne || '';
+        document.getElementById('editAddressTwo').value = currentProfile.addressTwo || '';
+        document.getElementById('editCity').value = currentProfile.city || '';
+        document.getElementById('editState').value = currentProfile.state || '';
+        document.getElementById('editCountry').value = currentProfile.country || '';
+    }
+    else if (section === 'workExp') {
+        document.getElementById('workExpView').style.display = 'none';
+
+        document.getElementById('workExpEdit').style.display = 'block';
+        
+        document.getElementById('editJobTitle').value = currentProfile.jobTitle || '';
+        document.getElementById('editCompanyName').value = currentProfile.companyName || '';
+        document.getElementById('editStartDate').value = currentProfile.startDate || '';
+        document.getElementById('editEndDate').value = currentProfile.endDate || '';
+        document.getElementById('editCurrentlyWorking').checked = currentProfile.currentlyWorking || false;
+        document.getElementById('editProfessionalSummary').value = currentProfile.professionalSummary || '';
+        
+        const endDateInput = document.getElementById('editEndDate');
+        if (currentProfile.currentlyWorking) {
+            endDateInput.disabled = true;
+            endDateInput.style.opacity = '0.5';
+        }
+    } else if (section === 'skills') {
+        document.getElementById('skillsView').style.display = 'none';
+        
+        document.getElementById('skillsEdit').style.display = 'block';
+        
+        document.getElementById('editLinkedin').value = currentProfile.linkedin || '';
+        document.getElementById('editGithub').value = currentProfile.github || '';
+        document.getElementById('editWebsite').value = currentProfile.website || '';
+
+        editingSkills = currentProfile.skills ? [...currentProfile.skills] : [];
+        renderEditSkills();
+    } else if (section === 'jobPref') {
+        document.getElementById('jobPrefView').style.display = 'none';
+        
+        document.getElementById('jobPrefEdit').style.display = 'block';
+        
+        if (currentProfile.workType) {
+            const radioBtn = document.getElementById(`editWorkType-${currentProfile.workType}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+        
+        document.getElementById('editSalary').value = currentProfile.expectedSalary || '';
+        document.getElementById('editPreferredLocations').value = currentProfile.preferredLocations || '';
+    } else if (section === 'auth') {
+        document.getElementById('authView').style.display = 'none';
+ 
+        document.getElementById('authEdit').style.display = 'block';
+        
+        if (currentProfile.authorized) {
+            const authorizedRadio = document.querySelector(`input[name="editAuthorized"][value="${currentProfile.authorized}"]`);
+            if (authorizedRadio) {
+                authorizedRadio.checked = true;
+            }
+        }
+
+        if (currentProfile.sponsorship) {
+            const sponsorshipRadio = document.querySelector(`input[name="editSponsorship"][value="${currentProfile.sponsorship}"]`);
+            if (sponsorshipRadio) {
+                sponsorshipRadio.checked = true;
+            }
+        }
+        
+        document.getElementById('editVisaType').value = currentProfile.visaSponsorship || '';
+    } else if (section === 'additional') {
+        document.getElementById('additionalView').style.display = 'none';
+        
+        document.getElementById('additionalEdit').style.display = 'block';
+
+        document.getElementById('editGender').value = currentProfile.gender || '';
+        document.getElementById('editHispanicLatino').value = currentProfile.hispanicLatino || '';
+        document.getElementById('editRace').value = currentProfile.race || '';
+        document.getElementById('editVeteran').value = currentProfile.veteran || '';
+        document.getElementById('editDisability').value = currentProfile.disability || '';
+    }
+}
+
+// Exit Edit Mode
+function exitEditMode(section) {
+    if (section === 'personalInfo') {
+        document.getElementById('personalInfoView').style.display = 'block';
+        document.getElementById('personalInfoEdit').style.display = 'none';
+    }
+    else if (section === 'workExp') {
+        document.getElementById('workExpView').style.display = 'block';
+        document.getElementById('workExpEdit').style.display = 'none';
+    } else if (section === 'skills') {
+        document.getElementById('skillsView').style.display = 'block';
+        document.getElementById('skillsEdit').style.display = 'none';
+        editingSkills = [];
+    } else if (section === 'jobPref') {
+        document.getElementById('jobPrefView').style.display = 'block';
+        document.getElementById('jobPrefEdit').style.display = 'none';
+    } else if (section === 'auth') {
+        document.getElementById('authView').style.display = 'block';
+        document.getElementById('authEdit').style.display = 'none';
+    } else if (section === 'additional') {
+        document.getElementById('additionalView').style.display = 'block';
+        document.getElementById('additionalEdit').style.display = 'none';
+    }
+}
+
+// Edit and Update For Personal Information
+async function savePersonalInfo() {
+    console.log('💾 Saving personal info...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const updatedData = {
+        ...currentProfile, 
+        firstName: document.getElementById('editFirstName').value.trim(),
+        middleName: document.getElementById('editMiddleName').value.trim(),
+        lastName: document.getElementById('editLastName').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        phone: document.getElementById('editPhone').value.trim(),
+        addressOne: document.getElementById('editAddressOne').value.trim(),
+        addressTwo: document.getElementById('editAddressTwo').value.trim(),
+        city: document.getElementById('editCity').value.trim(),
+        state: document.getElementById('editState').value.trim(),
+        country: document.getElementById('editCountry').value.trim()
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        // Update local storage
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            // Update display
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('personalInfo');
+            alert('✅ Profile updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating profile:', error);
+        alert(`❌ Failed to update profile: ${error.message}`);
+    }
+}
+
+// Edit and Update For Work & Additional Experience
+async function saveWorkExp() {
+    console.log('💾 Saving work experience...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    // Get updated values
+    const currentlyWorking = document.getElementById('editCurrentlyWorking').checked;
+    const endDate = currentlyWorking ? null : document.getElementById('editEndDate').value.trim();
+    
+    const updatedData = {
+        ...currentProfile,
+        jobTitle: document.getElementById('editJobTitle').value.trim(),
+        companyName: document.getElementById('editCompanyName').value.trim(),
+        startDate: document.getElementById('editStartDate').value.trim(),
+        endDate: endDate,
+        currentlyWorking: currentlyWorking,
+        professionalSummary: document.getElementById('editProfessionalSummary').value.trim()
+    };
+    
+    // Validation
+    if (!updatedData.jobTitle || !updatedData.companyName || !updatedData.startDate || !updatedData.professionalSummary) {
+        alert('⚠️ Please fill in all required fields');
+        return;
+    }
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        // Update local storage
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            // Update display
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('workExp');
+            alert('✅ Work experience updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating work experience:', error);
+        alert(`❌ Failed to update work experience: ${error.message}`);
+    }
+}
+
+// Add New Additional Experience
+async function addNewExperience() {
+    const jobTitle = document.getElementById('newExpJobTitle').value.trim();
+    const companyName = document.getElementById('newExpCompany').value.trim();
+    const startDate = document.getElementById('newExpStartDate').value.trim();
+    const endDate = document.getElementById('newExpEndDate').value.trim();
+    const currentlyWorking = document.getElementById('newExpCurrentlyWorking').checked;
+    const jobDescription = document.getElementById('newExpDescription').value.trim();
+
+    if (!jobTitle || !companyName || !startDate) {
+        alert('⚠️ Please fill in all required fields (Job Title, Company, Start Date)');
+        return;
+    }
+    
+    const newExp = {
+        jobTitle,
+        companyName,
+        startDate,
+        endDate: currentlyWorking ? null : endDate,
+        currentlyWorking,
+        jobDescription
+    };
+    
+    const additionalExperiences = currentProfile.additionalExperiences || [];
+    additionalExperiences.push(newExp);
+    
+    await updateAdditionalExperiences(additionalExperiences);
+    
+    document.getElementById('addExpModal').style.display = 'none';
+}
+
+// Edit Additional Experience
+function editAdditionalExperience(index) {
+    editingExpIndex = index;
+    const exp = currentProfile.additionalExperiences[index];
+    
+    // Populate edit modal
+    document.getElementById('editExpJobTitle').value = exp.jobTitle || '';
+    document.getElementById('editExpCompany').value = exp.companyName || '';
+    document.getElementById('editExpStartDate').value = exp.startDate || '';
+    document.getElementById('editExpEndDate').value = exp.endDate || '';
+    document.getElementById('editExpCurrentlyWorking').checked = exp.currentlyWorking || false;
+    document.getElementById('editExpDescription').value = exp.jobDescription || '';
+    
+    // Handle end date disabled state
+    const endDateInput = document.getElementById('editExpEndDate');
+    if (exp.currentlyWorking) {
+        endDateInput.disabled = true;
+        endDateInput.style.opacity = '0.5';
+    }
+    
+    // Show modal
+    document.getElementById('editExpModal').style.display = 'block';
+}
+
+// Save Edited Additional Experience
+async function saveEditedExperience() {
+    if (editingExpIndex === null) return;
+    
+    const jobTitle = document.getElementById('editExpJobTitle').value.trim();
+    const companyName = document.getElementById('editExpCompany').value.trim();
+    const startDate = document.getElementById('editExpStartDate').value.trim();
+    const endDate = document.getElementById('editExpEndDate').value.trim();
+    const currentlyWorking = document.getElementById('editExpCurrentlyWorking').checked;
+    const jobDescription = document.getElementById('editExpDescription').value.trim();
+    
+    // Validation
+    if (!jobTitle || !companyName || !startDate) {
+        alert('⚠️ Please fill in all required fields (Job Title, Company, Start Date)');
+        return;
+    }
+    
+    // Update experience in array
+    const additionalExperiences = [...currentProfile.additionalExperiences];
+    additionalExperiences[editingExpIndex] = {
+        jobTitle,
+        companyName,
+        startDate,
+        endDate: currentlyWorking ? null : endDate,
+        currentlyWorking,
+        jobDescription
+    };
+    
+    // Update profile
+    await updateAdditionalExperiences(additionalExperiences);
+    
+    // Close modal
+    document.getElementById('editExpModal').style.display = 'none';
+    editingExpIndex = null;
+}
+
+// Delete Additional Experience
+async function deleteAdditionalExperience(index) {
+    if (!confirm('Are you sure you want to delete this work experience?')) {
+        return;
+    }
+    
+    // Remove from array
+    const additionalExperiences = [...currentProfile.additionalExperiences];
+    additionalExperiences.splice(index, 1);
+    
+    // Update profile
+    await updateAdditionalExperiences(additionalExperiences);
+}
+
+// Update Additional Experiences Helper
+async function updateAdditionalExperiences(additionalExperiences) {
+    console.log('💾 Updating additional experiences...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const updatedData = {
+        ...currentProfile,
+        additionalExperiences
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        // Update local storage
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            // Update display
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            alert('✅ Work experiences updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating experiences:', error);
+        alert(`❌ Failed to update experiences: ${error.message}`);
+    }
+}
+
+// Edit and Update For Skills & Expertise
+function addSkillToEdit() {
+    const input = document.getElementById('editSkillInput');
+    const skillName = input.value.trim();
+    
+    if (!skillName) {
+        return;
+    }
+
+    if (editingSkills.includes(skillName)) {
+        alert('⚠️ This skill is already added');
+        input.value = '';
+        return;
+    }
+    
+    editingSkills.push(skillName);
+    input.value = '';
+    
+    renderEditSkills();
+}
+
+// Remove skill from editing list
+function removeSkillFromEdit(skillName) {
+    editingSkills = editingSkills.filter(s => s !== skillName);
+    renderEditSkills();
+}
+
+// Render skills in edit mode
+function renderEditSkills() {
+    const container = document.getElementById('editSkillsTags');
+    
+    if (editingSkills.length === 0) {
+        container.innerHTML = '<span style="color: rgba(255,255,255,0.5); padding: 0.5rem;">No skills added yet</span>';
+        return;
+    }
+    
+    container.innerHTML = editingSkills.map(skill => `
+        <span class="skill-tag" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #667eea; color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.875rem;">
+            ${skill}
+            <button 
+                type="button" 
+                onclick="removeSkillFromEdit('${skill.replace(/'/g, "\\'")}')" 
+                style="background: none; border: none; color: white; cursor: pointer; font-weight: bold; padding: 0; font-size: 1.1rem; line-height: 1;"
+                title="Remove skill"
+            >
+                ×
+            </button>
+        </span>
+    `).join('');
+}
+
+// Save Skills & Expertise
+async function saveSkills() {
+    console.log('💾 Saving skills & expertise...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const updatedData = {
+        ...currentProfile,
+        skills: editingSkills,
+        linkedin: document.getElementById('editLinkedin').value.trim(),
+        github: document.getElementById('editGithub').value.trim(),
+        website: document.getElementById('editWebsite').value.trim()
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('skills');
+            alert('✅ Skills & Expertise updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating skills:', error);
+        alert(`❌ Failed to update skills: ${error.message}`);
+    }
+}
+
+// Edit and Update For Job Preferences
+async function saveJobPref() {
+    console.log('💾 Saving job preferences...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const selectedWorkType = document.querySelector('input[name="editWorkType"]:checked');
+    
+    const updatedData = {
+        ...currentProfile,
+        workType: selectedWorkType ? selectedWorkType.value : null,
+        expectedSalary: document.getElementById('editSalary').value.trim(),
+        preferredLocations: document.getElementById('editPreferredLocations').value.trim()
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('jobPref');
+            alert('✅ Job Preferences updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating job preferences:', error);
+        alert(`❌ Failed to update job preferences: ${error.message}`);
+    }
+}
+
+// Save Abroad Authorization
+async function saveAuth() {
+    console.log('💾 Saving abroad authorization...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const selectedAuthorized = document.querySelector('input[name="editAuthorized"]:checked');
+    const selectedSponsorship = document.querySelector('input[name="editSponsorship"]:checked');
+
+    const updatedData = {
+        ...currentProfile,
+        authorized: selectedAuthorized ? selectedAuthorized.value : null,
+        sponsorship: selectedSponsorship ? selectedSponsorship.value : null,
+        visaSponsorship: document.getElementById('editVisaType').value.trim()
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('auth');
+            alert('✅ Authorization information updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating authorization:', error);
+        alert(`❌ Failed to update authorization: ${error.message}`);
+    }
+}
+
+// Upload Document (Resume or Cover Letter)
+async function uploadDocument(file, type) {
+    console.log(`📤 Uploading ${type}...`, file);
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('⚠️ Please upload only PDF, DOC, or DOCX files');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('⚠️ File size must be less than 5MB');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append(type, file);
+    
+    try {
+        console.log(`📤 Uploading ${type === 'resume' ? 'resume' : 'cover letter'}...`);
+        
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/files`, {
+            method: 'PUT',
+            body: formData
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to upload file');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Upload successful:', result);
+ 
+        await displayUploadedDocuments(currentProfile);
+        
+        alert(`✅ ${type === 'resume' ? 'Resume' : 'Cover letter'} uploaded successfully!`);
+        
+    } catch (error) {
+        console.error(`❌ Error uploading ${type}:`, error);
+        alert(`❌ Failed to upload ${type === 'resume' ? 'resume' : 'cover letter'}: ${error.message}`);
+    }
+}
+
+// Save Additional Questions
+async function saveAdditional() {
+    console.log('💾 Saving additional questions...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+
+    const updatedData = {
+        ...currentProfile,
+        gender: document.getElementById('editGender').value,
+        hispanicLatino: document.getElementById('editHispanicLatino').value,
+        race: document.getElementById('editRace').value,
+        veteran: document.getElementById('editVeteran').value,
+        disability: document.getElementById('editDisability').value
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('additional');
+            alert('✅ Additional questions updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating additional questions:', error);
+        alert(`❌ Failed to update additional questions: ${error.message}`);
+    }
+}
+
+// Display Authorization Information
 function displayAuthorizationInfo(profile) {
     // Work Authorization - Select Radio Button
     const authorizedValue = profile.authorized;
@@ -209,6 +1168,7 @@ function displayAuthorizationInfo(profile) {
     }
 }
 
+// Display Additional Information
 function displayAdditionalInfo(profile) {
     // Gender
     const genderEl = document.getElementById('genderInfo');
@@ -246,6 +1206,7 @@ function displayAdditionalInfo(profile) {
     }
 }
 
+// Display Uploaded Documents
 async function displayUploadedDocuments(profile) {
     const API_BASE_URL = 'http://localhost:3000/api/profiles';
     
@@ -283,6 +1244,7 @@ async function displayUploadedDocuments(profile) {
     });
 }
 
+// Loading State For Documents
 function showLoadingState() {
     const resumeLoading = document.getElementById('resumeLoading');
     const coverLetterLoading = document.getElementById('coverLetterLoading');
@@ -291,6 +1253,7 @@ function showLoadingState() {
     if (coverLetterLoading) coverLetterLoading.style.display = 'block';
 }
 
+// Display Resume Information
 function displayResumeInfo(resumeInfo, profileId) {
     const uploadedFileEl = document.getElementById('uploadedFile');
     const fileNameEl = document.getElementById('fileName');
@@ -339,6 +1302,7 @@ function displayResumeInfo(resumeInfo, profileId) {
     }
 }
 
+// Display Cover Letter Information
 function displayCoverLetterInfo(coverLetterInfo, profileId) {
     const uploadedFileCoverEl = document.getElementById('uploadedFileCover');
     const fileNameCoverEl = document.getElementById('fileNameCover');
@@ -388,6 +1352,7 @@ function displayCoverLetterInfo(coverLetterInfo, profileId) {
     }
 }
 
+// Show No Documents (Resume & Cover Letter) Message
 function showNoDocumentsMessage() { 
     const uploadedFileEl = document.getElementById('uploadedFile');
     const noResumeMessageEl = document.getElementById('noResumeMessage');
@@ -404,14 +1369,14 @@ function showNoDocumentsMessage() {
     if (noCoverLetterMessageEl) noCoverLetterMessageEl.style.display = 'block';
 }
 
-// View file in new tab
+// View File (Resume & Cover Letter) in New Tab
 function viewFile(profileId, fileType) {
     const API_BASE_URL = 'http://localhost:3000/api/profiles';
     const url = `${API_BASE_URL}/${profileId}/${fileType}`;
     window.open(url, '_blank');
 }
 
-// Download file
+// Download File (Resume & Cover Letter)
 async function downloadFile(profileId, fileType, filename) {
     const API_BASE_URL = 'http://localhost:3000/api/profiles';
     
@@ -439,7 +1404,7 @@ async function downloadFile(profileId, fileType, filename) {
     }
 }
 
-// Helper function to format file size
+// Format File Size
 function formatFileSize(bytes) {
     if (!bytes) return 'Unknown size';
     
@@ -452,7 +1417,7 @@ function formatFileSize(bytes) {
     return `${size} ${sizes[i]}`;
 }
 
-// Helper function to format date
+// Format Date - Additional Info
 function formatDate(dateString) {
     if (!dateString) return 'Unknown date';
     
@@ -473,7 +1438,7 @@ function formatDate(dateString) {
     });
 }
 
-// Formatting helper functions
+// Format Gender - Additional Info
 function formatGender(value) {
     if (!value) return 'Not specified';
     
@@ -486,6 +1451,7 @@ function formatGender(value) {
     return genderMap[value] || value;
 }
 
+// Format Hispanic/Latino - Additional Info
 function formatHispanicLatino(value) {
     if (!value) return 'Not specified';
     
@@ -498,6 +1464,7 @@ function formatHispanicLatino(value) {
     return hispanicMap[value] || value;
 }
 
+// Format Race - Additional Info
 function formatRace(value) {
     if (!value) return 'Not specified';
     
@@ -514,6 +1481,7 @@ function formatRace(value) {
     return raceMap[value] || value;
 }
 
+// Format Veteran Status - Additional Info
 function formatVeteranStatus(value) {
     if (!value) return 'Not specified';
     
@@ -526,6 +1494,7 @@ function formatVeteranStatus(value) {
     return veteranMap[value] || value;
 }
 
+// Format Disability Status - Additional Info
 function formatDisabilityStatus(value) {
     if (!value) return 'Not specified';
     
@@ -538,12 +1507,14 @@ function formatDisabilityStatus(value) {
     return disabilityMap[value] || value;
 }
 
+// Display Work Experiences
 function displayWorkExperiences(profile) {
     displayPrimaryExperience(profile);
     
     displayAdditionalExperiences(profile);
 }
 
+// Display Primary Experience
 function displayPrimaryExperience(profile) {
     // Job Title
     const jobTitleEl = document.getElementById('jobTitle');
@@ -603,6 +1574,7 @@ function displayPrimaryExperience(profile) {
     }
 }
 
+// Display Additional Experiences
 function displayAdditionalExperiences(profile) {
     const sectionEl = document.getElementById('additionalExperiencesSection');
     const containerEl = document.getElementById('additionalExperiencesContainer');
@@ -628,9 +1600,19 @@ function displayAdditionalExperiences(profile) {
         const endDateFormatted = exp.currentlyWorking ? 'Present' : (exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified');
         
         const experienceHTML = `
-            <div class="experience-item additional-experience">
-                <div class="experience-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem;">
-                    Position ${index + 1}
+            <div class="experience-item additional-experience" data-index="${index}" style="position: relative; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div class="experience-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        Position ${index + 1}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="edit-exp-btn" data-index="${index}" title="Edit" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            ✏️ Edit
+                        </button>
+                        <button type="button" class="delete-exp-btn" data-index="${index}" title="Delete" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            🗑️ Delete
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -675,8 +1657,24 @@ function displayAdditionalExperiences(profile) {
         
         containerEl.innerHTML += experienceHTML;
     });
+    
+    // Add event listeners to edit and delete buttons
+    document.querySelectorAll('.edit-exp-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            editAdditionalExperience(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-exp-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            deleteAdditionalExperience(index);
+        });
+    });
 }
 
+// Calculate Duration Between Two Dates (additional experiences)
 function calculateDuration(startDate, endDate, currentlyWorking) {
     if (!startDate) return 'Duration not specified';
     
@@ -701,6 +1699,7 @@ function calculateDuration(startDate, endDate, currentlyWorking) {
     return duration || '1 month';
 }
 
+// Format Date Range for Work Experience (additional experiences)
 function formatDateRange(startDate, endDate, currentlyWorking) {
     if (!startDate) return '-';
     
