@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let experienceCount = 0;
   
   // Backend API URL - Update this for production
-  const API_URL = 'http://localhost:3000/api/profile';
+  const API_URL = 'http://localhost:3000/api/profiles';
   
   // DOM Elements
   const form = document.getElementById('profileForm');

@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use('/uploads', express.static('uploads'));
 
 // Routes
-app.use('/api/profile', profileRoutes);
+app.use('/api/profiles', profileRoutes); // ✅ Changed to plural
 
 // Health check endpoint
 app.get('/health', (req, res) => {

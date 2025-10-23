@@ -58,6 +58,9 @@ const validateProfile = [
 ];
 
 // Routes
+// ⚠️ IMPORTANT: Specific routes MUST come BEFORE generic /:id routes
+
+// Root routes
 router.post(
     '/',
     upload.fields([
@@ -67,8 +70,14 @@ router.post(
     validateProfile,
     profileController.createProfile
 );
-
 router.get('/', profileController.getAllProfiles);
+
+// File-related routes (MUST be before /:id routes)
+router.get('/:id/files', profileController.getFileInfo);
+router.get('/:id/resume', profileController.getResume);
+router.get('/:id/cover-letter', profileController.getCoverLetter);
+
+// Generic ID routes (MUST be AFTER specific routes)
 router.get('/:id', profileController.getProfile);
 router.put('/:id', validateProfile, profileController.updateProfile);
 router.delete('/:id', profileController.deleteProfile);

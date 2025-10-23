@@ -65,6 +65,16 @@ body::before {
     transform: translateY(0);
 }
 
+.main {
+    padding-left: 40px;
+}
+
+.main h1 {
+    font-size: 30px;
+    font-weight: 700;
+    color: white;
+}
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;

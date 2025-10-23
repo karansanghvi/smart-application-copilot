@@ -192,3 +192,160 @@ exports.deleteProfile = async (req, res) => {
         });
     }
 };
+
+// Get resume file
+exports.getResume = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await Profile.findById(id);
+        
+        if (!profile) {
+            return res.status(404).json({ 
+                error: 'Profile not found' 
+            });
+        }
+        
+        if (!profile.resume_path || !profile.resume_filename) {
+            return res.status(404).json({ 
+                error: 'Resume not found for this profile' 
+            });
+        }
+        
+        // Check if file exists
+        const fs = require('fs');
+        if (!fs.existsSync(profile.resume_path)) {
+            return res.status(404).json({ 
+                error: 'Resume file not found on server' 
+            });
+        }
+        
+        // Send file
+        res.download(profile.resume_path, profile.resume_filename, (err) => {
+            if (err) {
+                console.error('Error sending resume:', err);
+                res.status(500).json({ 
+                    error: 'Failed to download resume' 
+                });
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching resume:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch resume',
+            message: error.message 
+        });
+    }
+};
+
+// Get cover letter file
+exports.getCoverLetter = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await Profile.findById(id);
+        
+        if (!profile) {
+            return res.status(404).json({ 
+                error: 'Profile not found' 
+            });
+        }
+        
+        if (!profile.cover_letter_path || !profile.cover_letter_filename) {
+            return res.status(404).json({ 
+                error: 'Cover letter not found for this profile' 
+            });
+        }
+        
+        // Check if file exists
+        const fs = require('fs');
+        if (!fs.existsSync(profile.cover_letter_path)) {
+            return res.status(404).json({ 
+                error: 'Cover letter file not found on server' 
+            });
+        }
+        
+        // Send file
+        res.download(profile.cover_letter_path, profile.cover_letter_filename, (err) => {
+            if (err) {
+                console.error('Error sending cover letter:', err);
+                res.status(500).json({ 
+                    error: 'Failed to download cover letter' 
+                });
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching cover letter:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch cover letter',
+            message: error.message 
+        });
+    }
+};
+
+// Get file metadata (to check if files exist)
+exports.getFileInfo = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await Profile.findById(id);
+        
+        if (!profile) {
+            return res.status(404).json({ 
+                error: 'Profile not found' 
+            });
+        }
+        
+        const fs = require('fs');
+        
+        const fileInfo = {
+            resume: {
+                exists: false,
+                filename: profile.resume_filename || null,
+                path: profile.resume_path || null,
+                fileExistsOnDisk: false
+            },
+            coverLetter: {
+                exists: false,
+                filename: profile.cover_letter_filename || null,
+                path: profile.cover_letter_path || null,
+                fileExistsOnDisk: false
+            }
+        };
+        
+        // Check resume
+        if (profile.resume_path && profile.resume_filename) {
+            fileInfo.resume.exists = true;
+            fileInfo.resume.fileExistsOnDisk = fs.existsSync(profile.resume_path);
+            
+            if (fileInfo.resume.fileExistsOnDisk) {
+                const stats = fs.statSync(profile.resume_path);
+                fileInfo.resume.size = stats.size;
+                fileInfo.resume.uploadedAt = stats.birthtime;
+            }
+        }
+        
+        // Check cover letter
+        if (profile.cover_letter_path && profile.cover_letter_filename) {
+            fileInfo.coverLetter.exists = true;
+            fileInfo.coverLetter.fileExistsOnDisk = fs.existsSync(profile.cover_letter_path);
+            
+            if (fileInfo.coverLetter.fileExistsOnDisk) {
+                const stats = fs.statSync(profile.cover_letter_path);
+                fileInfo.coverLetter.size = stats.size;
+                fileInfo.coverLetter.uploadedAt = stats.birthtime;
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: fileInfo
+        });
+        
+    } catch (error) {
+        console.error('Error fetching file info:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch file information',
+            message: error.message 
+        });
+    }
+};

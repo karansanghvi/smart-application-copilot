@@ -175,11 +175,8 @@ function displayUserProfile(profile) {
     }
 
     displayWorkExperiences(profile);
-    
     displayAuthorizationInfo(profile);
-    
     displayAdditionalInfo(profile);
-
     displayUploadedDocuments(profile);
 }
 
@@ -249,38 +246,231 @@ function displayAdditionalInfo(profile) {
     }
 }
 
-function displayUploadedDocuments(profile) {
-    // Display Resume
+async function displayUploadedDocuments(profile) {
+    const API_BASE_URL = 'http://localhost:3000/api/profiles';
+    
+    // Get profile ID from storage
+    chrome.storage.local.get(['profileId'], async (result) => {
+        const profileId = result.profileId;
+        
+        if (!profileId) {
+            showNoDocumentsMessage();
+            return;
+        }
+        
+        try {
+            showLoadingState();
+            
+            // Fetch file information from backend
+            const url = `${API_BASE_URL}/${profileId}/files`;
+            
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch file information');
+            }
+            
+            const data = await response.json();
+            
+            const fileInfo = data.data;
+            
+            displayResumeInfo(fileInfo.resume, profileId);
+            
+            displayCoverLetterInfo(fileInfo.coverLetter, profileId);
+        } catch (error) {
+            showNoDocumentsMessage();
+        }
+    });
+}
+
+function showLoadingState() {
+    const resumeLoading = document.getElementById('resumeLoading');
+    const coverLetterLoading = document.getElementById('coverLetterLoading');
+    
+    if (resumeLoading) resumeLoading.style.display = 'block';
+    if (coverLetterLoading) coverLetterLoading.style.display = 'block';
+}
+
+function displayResumeInfo(resumeInfo, profileId) {
     const uploadedFileEl = document.getElementById('uploadedFile');
     const fileNameEl = document.getElementById('fileName');
     const fileSizeEl = document.getElementById('fileSize');
+    const fileUploadDateEl = document.getElementById('fileUploadDate');
     const noResumeMessageEl = document.getElementById('noResumeMessage');
+    const resumeLoadingEl = document.getElementById('resumeLoading');
+
+    if (resumeLoadingEl) resumeLoadingEl.style.display = 'none';
     
-    if (profile.resumeUploaded && profile.resumeFileName) {
-        if (uploadedFileEl) uploadedFileEl.style.display = 'flex';
+    if (resumeInfo.exists && resumeInfo.fileExistsOnDisk) {
+        // Show resume card
+        if (uploadedFileEl) {
+            uploadedFileEl.style.display = 'block';
+        }
         if (noResumeMessageEl) noResumeMessageEl.style.display = 'none';
-        if (fileNameEl) fileNameEl.textContent = profile.resumeFileName;
-        if (fileSizeEl) fileSizeEl.textContent = profile.resumeFileSize || 'Size unknown';
+        
+        // Set file details
+        if (fileNameEl) {
+            fileNameEl.textContent = resumeInfo.filename;
+        }
+        if (fileSizeEl) {
+            const formattedSize = formatFileSize(resumeInfo.size);
+            fileSizeEl.textContent = formattedSize;
+        }
+        if (fileUploadDateEl) {
+            const formattedDate = formatDate(resumeInfo.uploadedAt);
+            fileUploadDateEl.textContent = formattedDate;
+        }
+        
+        // Add event listeners for buttons
+        const viewBtn = document.getElementById('viewResumeBtn');
+        const downloadBtn = document.getElementById('downloadResumeBtn');
+        
+        if (viewBtn) {
+            viewBtn.onclick = () => viewFile(profileId, 'resume');
+        }
+        
+        if (downloadBtn) {
+            downloadBtn.onclick = () => downloadFile(profileId, 'resume', resumeInfo.filename);
+        }
     } else {
+        // Show no resume message
         if (uploadedFileEl) uploadedFileEl.style.display = 'none';
         if (noResumeMessageEl) noResumeMessageEl.style.display = 'block';
     }
-    
-    // Display Cover Letter
+}
+
+function displayCoverLetterInfo(coverLetterInfo, profileId) {
     const uploadedFileCoverEl = document.getElementById('uploadedFileCover');
     const fileNameCoverEl = document.getElementById('fileNameCover');
     const fileSizeCoverEl = document.getElementById('fileSizeCover');
+    const fileCoverUploadDateEl = document.getElementById('fileCoverUploadDate');
     const noCoverLetterMessageEl = document.getElementById('noCoverLetterMessage');
+    const coverLetterLoadingEl = document.getElementById('coverLetterLoading');
     
-    if (profile.coverLetterUploaded && profile.coverLetterFileName) {
-        if (uploadedFileCoverEl) uploadedFileCoverEl.style.display = 'flex';
+    // Hide loading
+    if (coverLetterLoadingEl) coverLetterLoadingEl.style.display = 'none';
+    
+    if (coverLetterInfo.exists && coverLetterInfo.fileExistsOnDisk) {
+        // Show cover letter card
+        if (uploadedFileCoverEl) {
+            uploadedFileCoverEl.style.display = 'block';
+        }
         if (noCoverLetterMessageEl) noCoverLetterMessageEl.style.display = 'none';
-        if (fileNameCoverEl) fileNameCoverEl.textContent = profile.coverLetterFileName;
-        if (fileSizeCoverEl) fileSizeCoverEl.textContent = profile.coverLetterFileSize || 'Size unknown';
+        
+        // Set file details
+        if (fileNameCoverEl) {
+            fileNameCoverEl.textContent = coverLetterInfo.filename;
+        }
+        if (fileSizeCoverEl) {
+            const formattedSize = formatFileSize(coverLetterInfo.size);
+            fileSizeCoverEl.textContent = formattedSize;
+        }
+        if (fileCoverUploadDateEl) {
+            const formattedDate = formatDate(coverLetterInfo.uploadedAt);
+            fileCoverUploadDateEl.textContent = formattedDate;
+        }
+        
+        // Add event listeners for buttons
+        const viewBtn = document.getElementById('viewCoverLetterBtn');
+        const downloadBtn = document.getElementById('downloadCoverLetterBtn');
+        
+        if (viewBtn) {
+            viewBtn.onclick = () => viewFile(profileId, 'cover-letter');
+        }
+        
+        if (downloadBtn) {
+            downloadBtn.onclick = () => downloadFile(profileId, 'cover-letter', coverLetterInfo.filename);
+        }
     } else {
+        // Show no cover letter message
         if (uploadedFileCoverEl) uploadedFileCoverEl.style.display = 'none';
         if (noCoverLetterMessageEl) noCoverLetterMessageEl.style.display = 'block';
     }
+}
+
+function showNoDocumentsMessage() { 
+    const uploadedFileEl = document.getElementById('uploadedFile');
+    const noResumeMessageEl = document.getElementById('noResumeMessage');
+    const uploadedFileCoverEl = document.getElementById('uploadedFileCover');
+    const noCoverLetterMessageEl = document.getElementById('noCoverLetterMessage');
+    const resumeLoadingEl = document.getElementById('resumeLoading');
+    const coverLetterLoadingEl = document.getElementById('coverLetterLoading');
+    
+    if (resumeLoadingEl) resumeLoadingEl.style.display = 'none';
+    if (coverLetterLoadingEl) coverLetterLoadingEl.style.display = 'none';
+    if (uploadedFileEl) uploadedFileEl.style.display = 'none';
+    if (uploadedFileCoverEl) uploadedFileCoverEl.style.display = 'none';
+    if (noResumeMessageEl) noResumeMessageEl.style.display = 'block';
+    if (noCoverLetterMessageEl) noCoverLetterMessageEl.style.display = 'block';
+}
+
+// View file in new tab
+function viewFile(profileId, fileType) {
+    const API_BASE_URL = 'http://localhost:3000/api/profiles';
+    const url = `${API_BASE_URL}/${profileId}/${fileType}`;
+    window.open(url, '_blank');
+}
+
+// Download file
+async function downloadFile(profileId, fileType, filename) {
+    const API_BASE_URL = 'http://localhost:3000/api/profiles';
+    
+    try {
+        const url = `${API_BASE_URL}/${profileId}/${fileType}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to download ${fileType}`);
+        }
+        
+        const blob = await response.blob();
+        
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(blobUrl);
+        document.body.removeChild(a);
+    } catch (error) {
+        alert(`Failed to download ${fileType}. Please try again.`);
+    }
+}
+
+// Helper function to format file size
+function formatFileSize(bytes) {
+    if (!bytes) return 'Unknown size';
+    
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Bytes';
+    
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    const size = (bytes / Math.pow(1024, i)).toFixed(2);
+    
+    return `${size} ${sizes[i]}`;
+}
+
+// Helper function to format date
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown date';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    
+    return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+    });
 }
 
 // Formatting helper functions
