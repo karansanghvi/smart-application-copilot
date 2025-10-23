@@ -148,7 +148,49 @@ exports.updateProfile = async (req, res) => {
             });
         }
         
-        const result = await Profile.update(id, req.body);
+        // Parse JSON strings if they exist
+        let additionalExperiences = [];
+        let skills = [];
+        
+        try {
+            if (req.body.additionalExperiences) {
+                additionalExperiences = typeof req.body.additionalExperiences === 'string' 
+                    ? JSON.parse(req.body.additionalExperiences) 
+                    : req.body.additionalExperiences;
+            }
+        } catch (e) {
+            console.error('Error parsing additionalExperiences:', e);
+        }
+        
+        try {
+            if (req.body.skills) {
+                skills = typeof req.body.skills === 'string' 
+                    ? JSON.parse(req.body.skills) 
+                    : req.body.skills;
+            }
+        } catch (e) {
+            console.error('Error parsing skills:', e);
+        }
+        
+        // Prepare update data
+        const updateData = {
+            ...req.body,
+            additionalExperiences,
+            skills
+        };
+        
+        // Add new file paths if files were uploaded
+        if (req.files?.resume?.[0]) {
+            updateData.resumeFilename = req.files.resume[0].filename;
+            updateData.resumePath = req.files.resume[0].path;
+        }
+        
+        if (req.files?.coverLetter?.[0]) {
+            updateData.coverLetterFilename = req.files.coverLetter[0].filename;
+            updateData.coverLetterPath = req.files.coverLetter[0].path;
+        }
+        
+        const result = await Profile.update(id, updateData);
         
         res.json({
             success: true,
@@ -347,6 +389,57 @@ exports.getFileInfo = async (req, res) => {
         console.error('Error fetching file info:', error);
         res.status(500).json({ 
             error: 'Failed to fetch file information',
+            message: error.message 
+        });
+    }
+};
+
+// Update files only
+// Add this at the end before module.exports
+exports.updateFiles = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('📁 Updating files for profile:', id);
+        console.log('📄 Received files:', req.files);
+        
+        const updateData = {};
+        
+        if (req.files?.resume?.[0]) {
+            updateData.resumeFilename = req.files.resume[0].filename;
+            updateData.resumePath = req.files.resume[0].path;
+            console.log('✅ New resume uploaded:', req.files.resume[0].filename);
+        }
+        
+        if (req.files?.coverLetter?.[0]) {
+            updateData.coverLetterFilename = req.files.coverLetter[0].filename;
+            updateData.coverLetterPath = req.files.coverLetter[0].path;
+            console.log('✅ New cover letter uploaded:', req.files.coverLetter[0].filename);
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                error: 'No files provided'
+            });
+        }
+        
+        const result = await Profile.update(id, updateData);
+        
+        res.json({
+            success: true,
+            message: 'Files updated successfully',
+            data: result
+        });
+        
+    } catch (error) {
+        console.error('Error updating files:', error);
+        
+        if (error.message === 'Profile not found') {
+            return res.status(404).json({ error: error.message });
+        }
+        
+        res.status(500).json({ 
+            error: 'Failed to update files',
             message: error.message 
         });
     }

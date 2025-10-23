@@ -238,6 +238,10 @@ class Profile {
                 authorized: 'work_authorized',
                 sponsorship: 'visa_sponsorship_required',
                 visaSponsorship: 'visa_sponsorship_type',
+                resumeFilename: 'resume_filename',
+                resumePath: 'resume_path',
+                coverLetterFilename: 'cover_letter_filename',
+                coverLetterPath: 'cover_letter_path',
                 gender: 'gender',
                 hispanicLatino: 'hispanic_latino',
                 race: 'race',
@@ -266,6 +270,92 @@ class Profile {
                 
                 if (result.rows.length === 0) {
                     throw new Error('Profile not found');
+                }
+            }
+            
+            if (profileData.additionalExperiences !== undefined) {
+                console.log('🔄 Updating additional work experiences...');
+                
+                await client.query(`
+                    UPDATE work_experiences 
+                    SET job_title = $1, 
+                        company_name = $2, 
+                        start_date = $3, 
+                        end_date = $4, 
+                        currently_working = $5, 
+                        job_description = $6
+                    WHERE user_profile_id = $7 
+                    AND job_title = (SELECT job_title FROM user_profiles WHERE id = $7)
+                    AND company_name = (SELECT company_name FROM user_profiles WHERE id = $7)
+                `, [
+                    profileData.jobTitle || null,
+                    profileData.companyName || null,
+                    profileData.startDate || null,
+                    profileData.endDate || null,
+                    profileData.currentlyWorking || false,
+                    profileData.professionalSummary || null,
+                    id
+                ]);
+                
+                await client.query(`
+                    DELETE FROM work_experiences 
+                    WHERE user_profile_id = $1 
+                    AND NOT (
+                        job_title = (SELECT job_title FROM user_profiles WHERE id = $1)
+                        AND company_name = (SELECT company_name FROM user_profiles WHERE id = $1)
+                    )
+                `, [id]);
+                
+                const additionalExps = Array.isArray(profileData.additionalExperiences) 
+                    ? profileData.additionalExperiences 
+                    : [];
+                    
+                for (const exp of additionalExps) {
+                    if (!exp.jobTitle || !exp.companyName || !exp.startDate) {
+                        console.log('⚠️ Skipping invalid experience:', exp);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO work_experiences (
+                            user_profile_id, job_title, company_name, 
+                            start_date, end_date, currently_working, job_description
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    `, [
+                        id,
+                        exp.jobTitle,
+                        exp.companyName,
+                        exp.startDate,
+                        exp.endDate || null,
+                        exp.currentlyWorking || false,
+                        exp.jobDescription || null
+                    ]);
+                }
+                
+                console.log(`✅ Updated ${additionalExps.length} additional experiences`);
+            }
+            
+            if (profileData.skills && Array.isArray(profileData.skills)) {
+                await client.query(
+                    'DELETE FROM user_skills WHERE user_profile_id = $1',
+                    [id]
+                );
+                
+                for (const skillName of profileData.skills) {
+                    const skillResult = await client.query(`
+                        INSERT INTO skills (skill_name) 
+                        VALUES ($1) 
+                        ON CONFLICT (skill_name) DO UPDATE 
+                        SET skill_name = EXCLUDED.skill_name 
+                        RETURNING id
+                    `, [skillName]);
+                    
+                    const skillId = skillResult.rows[0].id;
+                    
+                    await client.query(`
+                        INSERT INTO user_skills (user_profile_id, skill_id) 
+                        VALUES ($1, $2)
+                    `, [id, skillId]);
                 }
             }
             
