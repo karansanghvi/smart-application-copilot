@@ -1,5 +1,6 @@
 // backend/controllers/profileController.js
 
+const { error } = require('console');
 const Profile = require('../models/Profile');
 const { validationResult } = require('express-validator');
 
@@ -395,7 +396,6 @@ exports.getFileInfo = async (req, res) => {
 };
 
 // Update files only
-// Add this at the end before module.exports
 exports.updateFiles = async (req, res) => {
     try {
         const { id } = req.params;
@@ -444,3 +444,87 @@ exports.updateFiles = async (req, res) => {
         });
     }
 };
+
+// Get profile data formatted for autofill
+exports.getAutofillData = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profile = await Profile.findById(id);
+
+        if (!profile) {
+            return res.status(404).json({
+                error: 'Profile not found'
+            });
+        }
+
+        // Format data for autofill 
+        const autofillData = {
+            // Personal Information
+            firstName: profile.first_name || '',
+            middleName: profile.middle_name || '',
+            lastName: profile.last_name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+
+            // Address
+            addressOne: profile.address_line_1 || '',
+            addressTwo: profile.address_line_2 || '',
+            city: profile.city || '',
+            state: profile.state || '',
+            country: profile.country || '',
+
+            // Primary Work Experience
+            jobTitle: profile.job_title || '',
+            companyName: profile.company_name || '',
+            startDate: profile.start_date || '',
+            endDate: profile.end_date || '',
+            currentlyWorking: profile.currently_working || false,
+            professionalSummary: profile.professional_summary || '',
+
+            // Additional Work Experiences
+            additionalExperiences: profile.work_experiences ? profile.work_experiences.map(exp => ({
+                jobTitle: exp.job_title,
+                companyName: exp.company_name,
+                startDate: exp.start_date,
+                endDate: exp.end_date,
+                currentlyWorking: exp.currently_working,
+                jobDescription: exp.job_description
+            })) : [],
+
+            // Skills
+            skills: profile.skills || [],
+
+            // Social Links
+            linkedIn: profile.linkedin || '',
+            github: profile.github || '',
+            website: profile.website || '',
+
+            // Job Preferences
+            authorized: profile.work_authorized || '',
+            sponsorship: profile.visa_sponsorship_required || '',
+            visaSponsorship: profile.visa_sponsorship_type || '',
+
+            // Additional Information
+            gender: profile.gender || '',
+            hispanicLatino: profile.hispanic_latino || '',
+            race: profile.race || '',
+            veteran: profile.veteran_status || '',
+            disability: profile.disability_status || '',
+
+            // File Information 
+            hasResume: !!(profile.resume_path && profile.resume_filename),
+            hasCoverLetter: !!(profile.cover_letter_path && profile.cover_letter_filename)
+        };
+
+        res.json({
+            success: true,
+            data: autofillData
+        });
+    } catch (error) {
+        console.error("Error fetching autofill data:", error);
+        res.status(500).json({
+            error: "Failed to fetch autofill data",
+            message: error.message
+        });
+    }
+}

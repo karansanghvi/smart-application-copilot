@@ -110,6 +110,8 @@ router.post(
 
 router.get('/', profileController.getAllProfiles);
 
+router.get('/:id/autofill', profileController.getAutofillData);
+
 router.get('/:id/files', profileController.getFileInfo);
 router.get('/:id/resume', profileController.getResume);
 router.get('/:id/cover-letter', profileController.getCoverLetter);
