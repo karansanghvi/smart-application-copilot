@@ -1,6 +1,6 @@
 // backend/controllers/profileController.js
 
-const { error } = require('console');
+const { error, profileEnd } = require('console');
 const Profile = require('../models/Profile');
 const { validationResult } = require('express-validator');
 
