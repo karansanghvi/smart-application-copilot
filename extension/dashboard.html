@@ -16,7 +16,28 @@
 
     <div class="main">
         <h1>👋 Hello, <span id="userName">User</span>!</h1>
+        
+        <!-- Button to show open tabs -->
+        <button id="showTabsBtn" class="show-tabs-btn">
+            📋 View Open Tabs
+        </button>
     </div>
-    <script src="./js/profile-page.js"></script>
+
+    <!-- Modal for displaying tabs -->
+    <div id="tabsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Open Tabs</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="tabsList" class="tabs-list">
+                    <!-- Tabs will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/dashboard.js"></script>
 </body>
 </html>
