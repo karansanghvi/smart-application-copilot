@@ -19,7 +19,7 @@
         
         <!-- Button to show open tabs -->
         <button id="showTabsBtn" class="show-tabs-btn">
-            📋 View Open Tabs
+            View Open Tabs
         </button>
     </div>
 
@@ -37,6 +37,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Add this before closing </body> tag -->
+<div id="logDisplay" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    padding: 10px;
+    overflow-y: auto;
+    z-index: 10000;
+    display: none;
+    border-top: 2px solid #8B5CF6;
+"></div>
+
+<button id="toggleLogs" style="
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    background: #8B5CF6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 10001;
+    font-size: 12px;
+">
+    Show Logs
+</button>
 
     <script src="./js/dashboard.js"></script>
 </body>

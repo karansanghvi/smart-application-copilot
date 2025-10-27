@@ -307,6 +307,58 @@ body::before {
     background: #7c3aed;
 }
 
+/* Autofill Button */
+.autofill-tab-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #8B5CF6, #6366F1);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.autofill-tab-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.4);
+}
+
+.autofill-tab-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.autofill-tab-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
