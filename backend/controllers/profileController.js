@@ -29,6 +29,7 @@ exports.createProfile = async (req, res) => {
         
         // Parse JSON strings from FormData
         let additionalExperiences = [];
+        let additionalEducation = [];
         let skills = [];
         
         try {
@@ -39,6 +40,16 @@ exports.createProfile = async (req, res) => {
             }
         } catch (e) {
             console.error('Error parsing additionalExperiences:', e);
+        }
+        
+        try {
+            if (req.body.additionalEducation) {
+                additionalEducation = typeof req.body.additionalEducation === 'string' 
+                    ? JSON.parse(req.body.additionalEducation) 
+                    : req.body.additionalEducation;
+            }
+        } catch (e) {
+            console.error('Error parsing additionalEducation:', e);
         }
         
         try {
@@ -56,13 +67,20 @@ exports.createProfile = async (req, res) => {
             exp && exp.jobTitle && exp.companyName && exp.startDate
         );
         
+        // Filter out invalid education (must have required fields)
+        const validEducation = additionalEducation.filter(edu => 
+            edu && edu.universityName && edu.fieldOfStudy && edu.educationStartDate && edu.degree
+        );
+        
         console.log('Valid additional experiences:', validExperiences);
+        console.log('Valid additional education:', validEducation);
         console.log('Skills:', skills);
         
         // Handle file uploads if present
         const profileData = {
             ...req.body,
             additionalExperiences: validExperiences,
+            additionalEducation: validEducation,
             skills: skills,
             resumeFilename: req.files?.resume?.[0]?.filename,
             resumePath: req.files?.resume?.[0]?.path,
@@ -151,6 +169,7 @@ exports.updateProfile = async (req, res) => {
         
         // Parse JSON strings if they exist
         let additionalExperiences = [];
+        let additionalEducation = [];
         let skills = [];
         
         try {
@@ -161,6 +180,16 @@ exports.updateProfile = async (req, res) => {
             }
         } catch (e) {
             console.error('Error parsing additionalExperiences:', e);
+        }
+        
+        try {
+            if (req.body.additionalEducation) {
+                additionalEducation = typeof req.body.additionalEducation === 'string' 
+                    ? JSON.parse(req.body.additionalEducation) 
+                    : req.body.additionalEducation;
+            }
+        } catch (e) {
+            console.error('Error parsing additionalEducation:', e);
         }
         
         try {
@@ -177,6 +206,7 @@ exports.updateProfile = async (req, res) => {
         const updateData = {
             ...req.body,
             additionalExperiences,
+            additionalEducation,
             skills
         };
         
@@ -469,9 +499,26 @@ exports.getAutofillData = async (req, res) => {
             // Address
             addressOne: profile.address_line_1 || '',
             addressTwo: profile.address_line_2 || '',
+            zipCode: profile.zip_code || '',
             city: profile.city || '',
             state: profile.state || '',
             country: profile.country || '',
+
+            // Primary Education
+            universityName: profile.university_name || '',
+            fieldOfStudy: profile.field_of_study || '',
+            educationStartDate: profile.education_start_date || '',
+            educationEndDate: profile.education_end_date || '',
+            degree: profile.degree || '',
+
+            // Additional Education
+            additionalEducation: profile.education ? profile.education.map(edu => ({
+                universityName: edu.university_name,
+                fieldOfStudy: edu.field_of_study,
+                educationStartDate: edu.education_start_date,
+                educationEndDate: edu.education_end_date,
+                degree: edu.degree
+            })) : [],
 
             // Primary Work Experience
             jobTitle: profile.job_title || '',
@@ -495,14 +542,21 @@ exports.getAutofillData = async (req, res) => {
             skills: profile.skills || [],
 
             // Social Links
-            linkedIn: profile.linkedin || '',
-            github: profile.github || '',
-            website: profile.website || '',
+            linkedIn: profile.linkedin_url || '',
+            github: profile.github_url || '',
+            website: profile.website_url || '',
 
             // Job Preferences
+            workType: profile.work_type || '',
+            expectedSalary: profile.expected_salary || '',
+            preferredLocations: profile.preferred_locations || '',
+            
+            // Work Authorization
             authorized: profile.work_authorized || '',
+            relocate: profile.work_relocate || '',
             sponsorship: profile.visa_sponsorship_required || '',
             visaSponsorship: profile.visa_sponsorship_type || '',
+            restrictiveBond: profile.restrictive_bond || '',
 
             // Additional Information
             gender: profile.gender || '',
@@ -527,4 +581,4 @@ exports.getAutofillData = async (req, res) => {
             message: error.message
         });
     }
-}
+};

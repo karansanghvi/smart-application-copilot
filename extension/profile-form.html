@@ -28,7 +28,7 @@
                     </div>
                 </div>
 
-                <div class="step-item" data-step="2">
+                <div class="step-item active" data-step="2">
                     <div class="step-number">
                         <span class="number">2</span>
                         <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display: none;">
@@ -36,7 +36,7 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Professional Summary</h3>
+                        <h3>Education</h3>
                     </div>
                 </div>
 
@@ -48,7 +48,7 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Skills & Expertise</h3>
+                        <h3>Professional Experience</h3>
                     </div>
                 </div>
 
@@ -60,7 +60,7 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Job Preferences</h3>
+                        <h3>Skills & Expertise</h3>
                     </div>
                 </div>
 
@@ -72,7 +72,7 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Abroad Authorization</h3>
+                        <h3>Job Preferences</h3>
                     </div>
                 </div>
 
@@ -84,13 +84,25 @@
                         </svg>
                     </div>
                     <div class="step-info">
-                        <h3>Upload Documents</h3>
+                        <h3>Abroad Authorization</h3>
                     </div>
                 </div>
 
                 <div class="step-item" data-step="7">
                     <div class="step-number">
                         <span class="number">7</span>
+                        <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display: none;">
+                            <path d="M5 10L8.5 13.5L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>Upload Documents</h3>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="8">
+                    <div class="step-number">
+                        <span class="number">8</span>
                         <svg class="checkmark" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display: none;">
                             <path d="M5 10L8.5 13.5L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -149,7 +161,7 @@
                             </div>
                         </div>
                         
-                        <div class="form-grid-two">
+                        <div class="form-grid-three">
                             <div class="form-group">
                                 <label for="addressOne">Address Line 1 *</label>
                                 <input type="text" id="addressOne" name="addressOne" required placeholder="Address Line 1">
@@ -157,6 +169,10 @@
                             <div class="form-group">
                                 <label for="addressTwo">Address Line 2</label>
                                 <input type="text" id="addressTwo" name="addressTwo" placeholder="Address Line 2">
+                            </div>
+                            <div class="form-group">
+                                <label for="zipCode">ZipCode</label>
+                                <input type="text" id="zipCode" name="zipCode" placeholder="ZipCode" required>
                             </div>
                         </div>
 
@@ -176,8 +192,71 @@
                         </div>
                     </div>
 
-                    <!-- Step 2: Professional Summary -->
+                    <!-- Step 2: Education -->
                     <div class="form-step" data-step="2">
+                        <h2>Education</h2>
+                        <p class="step-description">Tell us about your education background</p>
+
+                        <!-- Primary Education (always visible) -->
+                        <div class="experience-item primary-experience">
+                            <div class="experience-header">
+                                <h3>Current/Most Recent Education</h3>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="universityName">Enter University Name *</label>
+                                <input type="text" id="universityName" name="universityName" required placeholder="Title">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="fieldOfStudy">Enter Field Of Study *</label>
+                                <input type="text" id="fieldOfStudy" name="fieldOfStudy" placeholder="Background" required>
+                            </div>
+
+                            <div class="form-grid-three">
+                                <div class="form-group">
+                                    <label for="educationStartDate">Select Start Date *</label>
+                                    <input type="date" id="educationStartDate" name="educationStartDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="educationEndDate">Select End Date/Expected Graduation Date</label>
+                                    <input type="date" id="educationEndDate" name="educationEndDate">
+                                </div>
+                                <div class="form-group">
+                                    <label for="degree">Select Degree *</label>
+                                        <select id="degree" name="degree" required>
+                                            <option value="" disabled selected>Select your option</option>
+                                            <option value="highSchool">High School</option>
+                                            <option value="associateDegree">Associate's Degree</option>
+                                            <option value="mastersDegree">Master's Degree</option>
+                                            <option value="mbaDegree">Master's Of Business Administration (MBA)</option>
+                                            <option value="jurisDegree">Juris Degree (JD)</option>
+                                            <option value="doctorOfMedicine">Doctor Of Medicine</option>
+                                            <option value="doctorOfPhilosophy">Doctor Of Philosophy (PhD)</option>
+                                            <option value="engineerDegree">Engineer Degree</option>
+                                            <option value="otherDegree">Other</option>
+                                        </select>
+                                </div>
+                            </div>
+                        
+                        </div>
+
+                        <!-- Container for additional experiences -->
+                        <div id="additionalEducation"></div>
+
+                        <!-- Add Experience Button -->
+                        <div class="add-education-container">
+                            <button type="button" class="btn-add-experience" id="addEducationBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path d="M10 5V15M5 10H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                Add Another Education
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Professional Experience -->
+                    <div class="form-step" data-step="3">
                         <h2>Professional Summary</h2>
                         <p class="step-description">Tell us about your professional background</p>
 
@@ -236,8 +315,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 3: Skills -->
-                    <div class="form-step" data-step="3">
+                    <!-- Step 4: Skills -->
+                    <div class="form-step" data-step="4">
                         <h2>Skills & Expertise</h2>
                         <p class="step-description">What are your key skills?</p>
                     
@@ -266,8 +345,8 @@
                             </div>
                     </div>
 
-                    <!-- Step 4: Job Preferences -->
-                    <div class="form-step" data-step="4">
+                    <!-- Step 5: Job Preferences -->
+                    <div class="form-step" data-step="5">
                         <h2>Job Preferences</h2>
                         <p class="step-description">What are you looking for in your next role?</p>
                     
@@ -292,6 +371,34 @@
                             </label>
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label>Are you willing to relocate?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="relocate" value="yes" required>
+                                    <span>Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="relocate" value="no">
+                                    <span>No</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Are you subject to any restrictive covenants (e.g., non-compete, non-solicit agreements) that would prevent you from working at the chosen company?</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="restrictiveBond" value="yes" required>
+                                    <span>Yes</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="restrictiveBond" value="no">
+                                    <span>No</span>
+                                </label>
+                            </div>
+                        </div>
                     
                         <div class="form-group">
                             <label for="expectedSalary">Expected Salary (Annual)</label>
@@ -304,8 +411,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 5: Abroad Authorization -->
-                    <div class="form-step" data-step="5">
+                    <!-- Step 6: Abroad Authorization -->
+                    <div class="form-step" data-step="6">
                         <h2>Abroad Authorization</h2>
                         <p class="step-description">This form is for the people applying for jobs abroad.</p>
 
@@ -343,8 +450,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 6: Upload Documents -->
-                    <div class="form-step" data-step="6">
+                    <!-- Step 7: Upload Documents -->
+                    <div class="form-step" data-step="7">
                         <h2>Upload Your Documents</h2>
                         <p class="step-description">Save your documents</p>
 
@@ -397,8 +504,8 @@
                         </div>
                     </div>
 
-                    <!-- Step 7: Additional Questions -->
-                     <div class="form-step" data-step="7">
+                    <!-- Step 8: Additional Questions -->
+                     <div class="form-step" data-step="8">
                         <h2>Additional Questions</h2>  
                         <p class="step-description">Fill out the below self-identity questions.</p>  
                         <div class="form-group">

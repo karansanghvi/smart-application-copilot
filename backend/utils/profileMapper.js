@@ -27,7 +27,14 @@ const getFieldValue = (fieldName, profile) => {
         'country': profile.country,
         'zip_code': profile.zip_code,
         
-        // Work Experience (Primary)
+        // Education (Primary/Current)
+        'university_name': profile.university_name,
+        'field_of_study': profile.field_of_study,
+        'education_start_date': profile.education_start_date,
+        'education_end_date': profile.education_end_date,
+        'degree': profile.degree,
+        
+        // Work Experience (Primary/Current)
         'job_title': profile.job_title,
         'company_name': profile.company_name,
         'start_date': profile.start_date,
@@ -44,9 +51,11 @@ const getFieldValue = (fieldName, profile) => {
         'work_type': profile.work_type,
         'expected_salary': profile.expected_salary,
         'preferred_locations': profile.preferred_locations,
+        'work_relocate': profile.work_relocate ? 'Yes' : 'No',
         'work_authorized': profile.work_authorized ? 'Yes' : 'No',
         'visa_sponsorship_required': profile.visa_sponsorship_required ? 'Yes' : 'No',
         'visa_sponsorship_type': profile.visa_sponsorship_type,
+        'restrictive_bond': profile.restrictive_bond ? 'Yes' : 'No',
         
         // Demographic Information
         'gender': profile.gender,

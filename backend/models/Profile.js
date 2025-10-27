@@ -3,9 +3,9 @@
 const { query, getClient } = require('../conifg/database');
 
 class Profile {
+    // Create Profile
     static async create(profileData) {
         const client = await getClient();
-        
         try {
             await client.query('BEGIN');
             
@@ -13,18 +13,20 @@ class Profile {
             const profileQuery = `
                 INSERT INTO user_profiles (
                     first_name, middle_name, last_name, email, phone,
-                    address_line_1, address_line_2, city, state, country,
+                    address_line_1, address_line_2, zipcode, city, state, country,
+                    university_name, field_of_study, education_start_date, education_end_date, degree,
                     job_title, company_name, start_date, end_date, currently_working,
                     professional_summary, linkedin_url, github_url, website_url,
-                    work_type, expected_salary, preferred_locations,
-                    work_authorized, visa_sponsorship_required, visa_sponsorship_type,
+                    work_type, expected_salary, preferred_locations, work_relocate,
+                    work_authorized, visa_sponsorship_required, visa_sponsorship_type, restrictive_bond,
                     resume_filename, resume_path, cover_letter_filename, cover_letter_path,
                     gender, hispanic_latino, race, veteran_status, disability_status
                 ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                    $11, $12, $13, $14, $15, $16, $17, $18, $19,
-                    $20, $21, $22, $23, $24, $25, $26, $27, $28, $29,
-                    $30, $31, $32, $33, $34
+                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+                    $12, $13, $14, $15, $16,
+                    $17, $18, $19, $20, $21, $22, $23, $24, $25,
+                    $26, $27, $28, $29, $30, $31, $32, $33, $34, $35,
+                    $36, $37, $38, $39, $40, $41, $42
                 ) RETURNING id
             `;
             
@@ -36,9 +38,15 @@ class Profile {
                 profileData.phone,
                 profileData.addressOne,
                 profileData.addressTwo || null,
+                profileData.zipCode,
                 profileData.city,
                 profileData.state,
                 profileData.country,
+                profileData.universityName,
+                profileData.fieldOfStudy,
+                profileData.educationStartDate,
+                profileData.educationEndDate || null,
+                profileData.degree,
                 profileData.jobTitle,
                 profileData.companyName,
                 profileData.startDate,
@@ -49,11 +57,13 @@ class Profile {
                 profileData.github || null,
                 profileData.website || null,
                 profileData.workType || null,
+                profileData.relocate || null,
                 profileData.expectedSalary || null,
                 profileData.preferredLocations || null,
                 profileData.authorized || null,
                 profileData.sponsorship || null,
                 profileData.visaSponsorship || null,
+                profileData.restrictiveBond || null,
                 profileData.resumeFilename || null,
                 profileData.resumePath || null,
                 profileData.coverLetterFilename || null,
@@ -68,7 +78,50 @@ class Profile {
             const result = await client.query(profileQuery, profileValues);
             const userId = result.rows[0].id;
             
-            // ✅ NEW: Also insert PRIMARY experience into work_experiences table
+            // ✅ Insert PRIMARY education into education table
+            console.log('Inserting primary education into education table...');
+            await client.query(`
+                INSERT INTO education (
+                    user_profile_id, university_name, field_of_study, 
+                    education_start_date, education_end_date, degree
+                ) VALUES ($1, $2, $3, $4, $5, $6)
+            `, [
+                userId,
+                profileData.universityName,
+                profileData.fieldOfStudy,
+                profileData.educationStartDate,
+                profileData.educationEndDate || null,
+                profileData.degree
+            ]);
+            
+            // ✅ Insert additional education entries
+            if (profileData.additionalEducation && profileData.additionalEducation.length > 0) {
+                console.log(`Inserting ${profileData.additionalEducation.length} additional education entries...`);
+                
+                for (const edu of profileData.additionalEducation) {
+                    // Skip if missing required fields
+                    if (!edu.universityName || !edu.fieldOfStudy || !edu.educationStartDate || !edu.degree) {
+                        console.log('Skipping invalid education entry:', edu);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO education (
+                            user_profile_id, university_name, field_of_study, 
+                            education_start_date, education_end_date, degree
+                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                    `, [
+                        userId,
+                        edu.universityName,
+                        edu.fieldOfStudy,
+                        edu.educationStartDate,
+                        edu.educationEndDate || null,
+                        edu.degree
+                    ]);
+                }
+            }
+            
+            // ✅ Insert PRIMARY work experience into work_experiences table
             console.log('Inserting primary experience into work_experiences table...');
             await client.query(`
                 INSERT INTO work_experiences (
@@ -82,7 +135,7 @@ class Profile {
                 profileData.startDate,
                 profileData.endDate || null,
                 profileData.currentlyWorking || false,
-                profileData.professionalSummary // Using professional summary as job description
+                profileData.professionalSummary
             ]);
             
             // ✅ Insert additional work experiences
@@ -113,7 +166,7 @@ class Profile {
                 }
             }
                         
-            // Insert skills
+            // ✅ Insert skills
             if (profileData.skills && profileData.skills.length > 0) {
                 console.log(`Inserting ${profileData.skills.length} skills...`);
                 
@@ -139,7 +192,7 @@ class Profile {
             
             await client.query('COMMIT');
             
-            console.log('✅ Profile created successfully with all experiences!');
+            console.log('✅ Profile created successfully with all education and experiences!');
             return { id: userId, message: 'Profile created successfully' };
             
         } catch (error) {

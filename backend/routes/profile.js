@@ -50,13 +50,19 @@ const validateProfile = [
     body('email').isEmail().withMessage('Valid email is required'),
     body('phone').trim().notEmpty().withMessage('Phone number is required'),
     body('addressOne').trim().notEmpty().withMessage('Address is required'),
+    body('zipCode').trim().notEmpty().withMessage('Zip Code is required'),
     body('city').trim().notEmpty().withMessage('City is required'),
     body('state').trim().notEmpty().withMessage('State is required'),
     body('country').trim().notEmpty().withMessage('Country is required'),
     body('jobTitle').trim().notEmpty().withMessage('Job title is required'),
     body('companyName').trim().notEmpty().withMessage('Company name is required'),
     body('startDate').isISO8601().withMessage('Valid start date is required'),
-    body('professionalSummary').trim().notEmpty().withMessage('Professional summary is required')
+    body('professionalSummary').trim().notEmpty().withMessage('Professional summary is required'),
+    body('universityName').trim().notEmpty().withMessage('University Name required'),
+    body('fieldOfStudy').trim().notEmpty().withMessage('Field Of Study Is Required'),
+    body('educationStartDate').isISO8601().withMessage('Valid start date is required'),
+    body('educationEndDate').isISO8601().withMessage('Valid end date is required'),
+    body('degree').trim().notEmpty().withMessage('Degree is required')
 ];
 
 // Validation middleware for UPDATE (less strict - only validate if field is present)
@@ -66,13 +72,19 @@ const validateProfileUpdate = [
     body('email').optional().isEmail().withMessage('Valid email is required'),
     body('phone').optional().trim().notEmpty().withMessage('Phone number cannot be empty'),
     body('addressOne').optional().trim().notEmpty().withMessage('Address cannot be empty'),
+    body('zipCode').trim().notEmpty().withMessage('Zip Code is required'),
     body('city').optional().trim().notEmpty().withMessage('City cannot be empty'),
     body('state').optional().trim().notEmpty().withMessage('State cannot be empty'),
     body('country').optional().trim().notEmpty().withMessage('Country cannot be empty'),
     body('jobTitle').optional().trim().notEmpty().withMessage('Job title cannot be empty'),
     body('companyName').optional().trim().notEmpty().withMessage('Company name cannot be empty'),
     body('startDate').optional().isISO8601().withMessage('Valid start date is required'),
-    body('professionalSummary').optional().trim().notEmpty().withMessage('Professional summary cannot be empty')
+    body('professionalSummary').optional().trim().notEmpty().withMessage('Professional summary cannot be empty'),
+    body('universityName').trim().notEmpty().withMessage('University Name required'),
+    body('fieldOfStudy').trim().notEmpty().withMessage('Field Of Study Is Required'),
+    body('educationStartDate').isISO8601().withMessage('Valid start date is required'),
+    body('educationEndDate').isISO8601().withMessage('Valid end date is required'),
+    body('degree').trim().notEmpty().withMessage('Degree is required')
 ];
 
 const skipValidationForFileUpload = (req, res, next) => {

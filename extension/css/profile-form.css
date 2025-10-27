@@ -409,6 +409,11 @@ textarea {
   text-align: center;
 }
 
+.add-education-container {
+  margin-top: 24px;
+  text-align: center;
+}
+
 .btn-add-experience {
   display: inline-flex;
   align-items: center;
