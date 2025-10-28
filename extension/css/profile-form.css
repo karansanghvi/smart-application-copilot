@@ -49,7 +49,7 @@ body::before {
 }
 
 .sidebar-header {
-  margin-bottom: 40px;
+  margin-bottom: 10px;
   flex-shrink: 0; 
 }
 
@@ -66,22 +66,48 @@ body::before {
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   flex: 1; 
-  overflow: hidden; 
+  overflow-y: auto;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.steps-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.steps-list::-webkit-scrollbar-track {
+  background: transparent;
+  /* or background: rgba(0, 0, 0, 0.1); for subtle track */
+}
+
+.steps-list::-webkit-scrollbar-thumb {
+  background: rgba(138, 100, 255, 0.5); /* purple to match your theme */
+  border-radius: 4px;
+}
+
+.steps-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(138, 100, 255, 0.7);
+}
+
+/* Firefox */
+.steps-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(138, 100, 255, 0.5) transparent;
 }
 
 .step-item {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px;
+  padding: 10px;
   border-radius: 12px;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   background: transparent;
   border: 2px solid transparent;
+  margin-right: 20px;
 }
 
 /* Blur future steps */
@@ -107,8 +133,8 @@ body::before {
 
 /* Step Number/Checkmark Circle */
 .step-number {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -131,7 +157,7 @@ body::before {
 }
 
 .step-number .number {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -155,7 +181,6 @@ body::before {
   font-size: 15px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 4px;
 }
 
 .step-item.active .step-info h3 {

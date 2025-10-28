@@ -30,6 +30,7 @@ exports.createProfile = async (req, res) => {
         // Parse JSON strings from FormData
         let additionalExperiences = [];
         let additionalEducation = [];
+        let additionalProject = [];
         let skills = [];
         
         try {
@@ -51,6 +52,16 @@ exports.createProfile = async (req, res) => {
         } catch (e) {
             console.error('Error parsing additionalEducation:', e);
         }
+
+        try {
+            if (req.body.additionalProject) {
+                additionalProject = typeof req.body.additionalProject === 'string' 
+                    ? JSON.parse(req.body.additionalProject) 
+                    : req.body.additionalProject;
+            }
+        } catch (e) {
+            console.error('Error parsing additionalProject:', e);
+        }
         
         try {
             if (req.body.skills) {
@@ -71,9 +82,14 @@ exports.createProfile = async (req, res) => {
         const validEducation = additionalEducation.filter(edu => 
             edu && edu.universityName && edu.fieldOfStudy && edu.educationStartDate && edu.degree
         );
+
+        const validProject = additionalProject.filter(proj => 
+            proj && proj.projectTitle && proj.projectSummary 
+        );
         
         console.log('Valid additional experiences:', validExperiences);
         console.log('Valid additional education:', validEducation);
+        console.log('Valid additional projectsL:', validProject);
         console.log('Skills:', skills);
         
         // Handle file uploads if present
@@ -81,6 +97,7 @@ exports.createProfile = async (req, res) => {
             ...req.body,
             additionalExperiences: validExperiences,
             additionalEducation: validEducation,
+            additionalProject: validProject,
             skills: skills,
             resumeFilename: req.files?.resume?.[0]?.filename,
             resumePath: req.files?.resume?.[0]?.path,
@@ -170,6 +187,7 @@ exports.updateProfile = async (req, res) => {
         // Parse JSON strings if they exist
         let additionalExperiences = [];
         let additionalEducation = [];
+        let additionalProject = [];
         let skills = [];
         
         try {
@@ -191,6 +209,16 @@ exports.updateProfile = async (req, res) => {
         } catch (e) {
             console.error('Error parsing additionalEducation:', e);
         }
+
+        try {
+            if (req.body.additionalProject) {
+                additionalProject = typeof req.body.additionalProject === 'string' 
+                    ? JSON.parse(req.body.additionalProject) 
+                    : req.body.additionalProject;
+            }
+        } catch (e) {
+            console.error('Error parsing additionalProject:', e);
+        }
         
         try {
             if (req.body.skills) {
@@ -207,6 +235,7 @@ exports.updateProfile = async (req, res) => {
             ...req.body,
             additionalExperiences,
             additionalEducation,
+            additionalProject,
             skills
         };
         
@@ -476,6 +505,7 @@ exports.updateFiles = async (req, res) => {
 };
 
 // Get profile data formatted for autofill
+// Get profile data formatted for autofill
 exports.getAutofillData = async (req, res) => {
     try {
         const { id } = req.params;
@@ -536,6 +566,16 @@ exports.getAutofillData = async (req, res) => {
                 endDate: exp.end_date,
                 currentlyWorking: exp.currently_working,
                 jobDescription: exp.job_description
+            })) : [],
+
+            // Primary Project 
+            projectTitle: profile.project_title || '',
+            projectSummary: profile.project_summary || '',
+
+            // Additional Projects 
+            additionalProjects: profile.projects ? profile.projects.map(proj => ({
+                projectTitle: proj.project_title,
+                projectSummary: proj.project_summary
             })) : [],
 
             // Skills

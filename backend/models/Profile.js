@@ -16,7 +16,7 @@ class Profile {
                     address_line_1, address_line_2, zipcode, city, state, country,
                     university_name, field_of_study, education_start_date, education_end_date, degree,
                     job_title, company_name, start_date, end_date, currently_working,
-                    professional_summary, linkedin_url, github_url, website_url,
+                    professional_summary, project_title, project_summary, linkedin_url, github_url, website_url,
                     work_type, expected_salary, preferred_locations, work_relocate,
                     work_authorized, visa_sponsorship_required, visa_sponsorship_type, restrictive_bond,
                     resume_filename, resume_path, cover_letter_filename, cover_letter_path,
@@ -26,7 +26,7 @@ class Profile {
                     $12, $13, $14, $15, $16,
                     $17, $18, $19, $20, $21, $22, $23, $24, $25,
                     $26, $27, $28, $29, $30, $31, $32, $33, $34, $35,
-                    $36, $37, $38, $39, $40, $41, $42
+                    $36, $37, $38, $39, $40, $41, $42, $43, $44
                 ) RETURNING id
             `;
             
@@ -53,6 +53,8 @@ class Profile {
                 profileData.endDate || null,
                 profileData.currentlyWorking || false,
                 profileData.professionalSummary,
+                profileData.projectTitle || false,
+                profileData.projectSummary || false,
                 profileData.linkedin || null,
                 profileData.github || null,
                 profileData.website || null,
@@ -165,6 +167,41 @@ class Profile {
                     ]);
                 }
             }
+
+            // ✅ Insert PRIMARY projects into projects table
+            console.log('Inserting primary project into projects table...');
+            await client.query(`
+                INSERT INTO projects (
+                    user_profile_id, project_title, project_summary
+                ) VALUES ($1, $2, $3)
+            `, [
+                userId,
+                profileData.projectTitle || null,
+                profileData.projectSummary || null
+            ]);
+            
+            // ✅ Insert additional projects
+            if (profileData.additionalProject && profileData.additionalProject.length > 0) {
+                console.log(`Inserting ${profileData.additionalProject.length} additional projects...`);
+                
+                for (const proj of profileData.additionalProject) {
+                    // Skip if missing required fields
+                    if (!proj.projectTitle || !proj.projectSummary) {
+                        console.log('Skipping invalid project:', proj);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO projects (
+                            user_profile_id, project_title, project_summary
+                        ) VALUES ($1, $2, $3)
+                    `, [
+                        userId,
+                        proj.projectTitle,
+                        proj.projectSummary
+                    ]);
+                }
+            }
                         
             // ✅ Insert skills
             if (profileData.skills && profileData.skills.length > 0) {
@@ -192,7 +229,7 @@ class Profile {
             
             await client.query('COMMIT');
             
-            console.log('✅ Profile created successfully with all education and experiences!');
+            console.log('✅ Profile created successfully with all education, experiences, and projects!');
             return { id: userId, message: 'Profile created successfully' };
             
         } catch (error) {
@@ -223,6 +260,20 @@ class Profile {
             [id]
         );
         profile.work_experiences = experiencesResult.rows;
+        
+        // Get education
+        const educationResult = await query(
+            'SELECT * FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        profile.education = educationResult.rows;
+        
+        // Get projects
+        const projectsResult = await query(
+            'SELECT * FROM projects WHERE user_profile_id = $1 ORDER BY id',
+            [id]
+        );
+        profile.projects = projectsResult.rows;
         
         // Get skills
         const skillsResult = await query(`
@@ -282,6 +333,8 @@ class Profile {
                 endDate: 'end_date',
                 currentlyWorking: 'currently_working',
                 professionalSummary: 'professional_summary',
+                projectTitle: 'project_title',
+                projectSummary: 'project_summary',
                 linkedin: 'linkedin_url',
                 github: 'github_url',
                 website: 'website_url',
@@ -326,6 +379,7 @@ class Profile {
                 }
             }
             
+            // update, delete and insert additional experience 
             if (profileData.additionalExperiences !== undefined) {
                 console.log('🔄 Updating additional work experiences...');
                 
@@ -386,6 +440,116 @@ class Profile {
                 }
                 
                 console.log(`✅ Updated ${additionalExps.length} additional experiences`);
+            }
+
+            // update, delete and insert additional education
+            if (profileData.additionalEducation !== undefined) {
+                console.log('🔄 Updating additional education...');
+                
+                await client.query(`
+                    UPDATE education 
+                    SET university_name = $1, 
+                        field_of_study = $2, 
+                        education_start_date = $3, 
+                        education_end_date = $4, 
+                        degree = $5
+                    WHERE user_profile_id = $6
+                    AND university_name = (SELECT university_name FROM user_profiles WHERE id = $6)
+                    AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $6)
+                `, [
+                    profileData.universityName || null,
+                    profileData.fieldOfStudy || null,
+                    profileData.educationStartDate || null,
+                    profileData.educationEndDate || null,
+                    profileData.degree || null,
+                    id
+                ]);
+                
+                await client.query(`
+                    DELETE FROM education 
+                    WHERE user_profile_id = $1 
+                    AND NOT (
+                        university_name = (SELECT university_name FROM user_profiles WHERE id = $1)
+                        AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $1)
+                    )
+                `, [id]);
+                
+                const additionalEducation = Array.isArray(profileData.additionalEducation) 
+                    ? profileData.additionalEducation 
+                    : [];
+                    
+                for (const edu of additionalEducation) {
+                    if (!edu.universityName || !edu.fieldOfStudy) {
+                        console.log('⚠️ Skipping invalid education:', edu);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO education (
+                            user_profile_id, university_name, field_of_study, 
+                            education_start_date, education_end_date, degree
+                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                    `, [
+                        id,
+                        edu.universityName,
+                        edu.fieldOfStudy,
+                        edu.educationStartDate,
+                        edu.educationEndDate,
+                        edu.degree
+                    ]);
+                }
+                
+                console.log(`✅ Updated ${additionalEducation.length} additional education`);
+            }
+
+            // update, delete and insert additional projects
+            if (profileData.additionalProject !== undefined) {
+                console.log('🔄 Updating additional projects...');
+                
+                // Update the primary project
+                await client.query(`
+                    UPDATE projects 
+                    SET project_title = $1, 
+                        project_summary = $2
+                    WHERE user_profile_id = $3
+                    AND project_title = (SELECT project_title FROM user_profiles WHERE id = $3)
+                `, [
+                    profileData.projectTitle || null,
+                    profileData.projectSummary || null,
+                    id
+                ]);
+                
+                // Delete all additional projects (keep only the primary one)
+                await client.query(`
+                    DELETE FROM projects 
+                    WHERE user_profile_id = $1 
+                    AND NOT (
+                        project_title = (SELECT project_title FROM user_profiles WHERE id = $1)
+                    )
+                `, [id]);
+                
+                const additionalProjects = Array.isArray(profileData.additionalProject) 
+                    ? profileData.additionalProject 
+                    : [];
+                    
+                for (const proj of additionalProjects) {
+                    if (!proj.projectTitle || !proj.projectSummary) {
+                        console.log('⚠️ Skipping invalid project:', proj);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO projects (
+                            user_profile_id, project_title, project_summary
+                        ) VALUES ($1, $2, $3)
+                    `, [
+                        id,
+                        proj.projectTitle,
+                        proj.projectSummary
+                    ]);
+                }
+                
+                console.log(`✅ Updated ${additionalProjects.length} additional projects`);
             }
             
             if (profileData.skills && Array.isArray(profileData.skills)) {

@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   // State
   let currentStep = 1;
-  const totalSteps = 8;
+  const totalSteps = 9;
   let skills = [];
   let experienceCount = 0;
   let educationCount = 0;
+  let projectCount = 0;
   
   // Backend API URL - Update this for production
   const API_URL = 'http://localhost:3000/api/profiles';
@@ -192,7 +193,64 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  
+
+  // Education Management
+  const addProjectBtn = document.getElementById('addProjectBtn');
+  const additionalProjectContainer = document.getElementById('additionalProject');
+
+  if (addProjectBtn) {
+    addProjectBtn.addEventListener('click', () => {
+      addProjectItem();
+    });
+  }
+
+  function addProjectItem() {
+    projectCount++;
+    
+    const educationHTML = `
+      <div class="experience-item additional-experience" data-experience-id="${projectCount}">
+        <div class="experience-header">
+          <h3>Previous Project ${projectCount}</h3>
+          <button type="button" class="remove-experience-btn" data-remove-id="${projectCount}">
+            Remove
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label for="projectTitle${projectCount}">Enter Project Title *</label>
+          <input type="text" id="projectTitle${projectCount}" name="projectTitle${projectCount}" placeholder="Project Name">
+        </div>
+
+        <div class="form-group">
+          <label for="projectSummary${projectCount}">Project Description</label>
+          <textarea id="projectSummary${projectCount}" name="projectSummary${projectCount}" rows="20" 
+            placeholder="Describe your project..."></textarea>
+        </div>
+      </div>
+    `;
+    
+    additionalProjectContainer.insertAdjacentHTML('beforeend', educationHTML);
+    
+    const newProject = additionalProjectContainer.lastElementChild;
+    newProject.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-project-btn')) {
+      const removeId = e.target.getAttribute('data-remove-id');
+      const projectItem = document.querySelector(`[data-project-id="${removeId}"]`);
+      
+      if (projectItem) {
+        projectItem.style.transition = 'all 0.3s ease';
+        projectItem.style.opacity = '0';
+        projectItem.style.transform = 'translateX(-20px)';
+        
+        setTimeout(() => {
+          projectItem.remove();
+        }, 300);
+      }
+    }
+  });
   
   // Tags Input - Skills
   const skillsInput = document.getElementById('skillsInput');
@@ -436,181 +494,201 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function saveFormData() {
-  const formElements = form.elements;
+    const formElements = form.elements;
   
-  // Show loading state
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '<span>Saving...</span>';
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Saving...</span>';
 
-  try {
-    // Collect additional experiences
-    const additionalExperiences = [];
-    for (let i = 1; i <= experienceCount; i++) {
-      const expItem = document.querySelector(`[data-experience-id="${i}"]`);
-      if (expItem) {
-        additionalExperiences.push({
-          jobTitle: formElements[`jobTitle_${i}`]?.value || '',
-          companyName: formElements[`companyName_${i}`]?.value || '',
-          startDate: formElements[`startDate_${i}`]?.value || '',
-          endDate: formElements[`endDate_${i}`]?.value || '',
-          currentlyWorking: false,
-          jobDescription: formElements[`experienceSummary_${i}`]?.value || ''
-        });
+    try {
+      // Collect additional experiences
+      const additionalExperiences = [];
+      for (let i = 1; i <= experienceCount; i++) {
+        const expItem = document.querySelector(`[data-experience-id="${i}"]`);
+        if (expItem) {
+          additionalExperiences.push({
+            jobTitle: formElements[`jobTitle_${i}`]?.value || '',
+            companyName: formElements[`companyName_${i}`]?.value || '',
+            startDate: formElements[`startDate_${i}`]?.value || '',
+            endDate: formElements[`endDate_${i}`]?.value || '',
+            currentlyWorking: false,
+            jobDescription: formElements[`experienceSummary_${i}`]?.value || ''
+          });
+        }
       }
-    }
-    
-    // Collect additional education
-    const additionalEducation = [];
-    for (let i = 1; i <= educationCount; i++) {
-      const eduItem = document.querySelector(`[data-experience-id="${i}"]`);
-      if (eduItem) {
-        additionalEducation.push({
-          universityName: formElements[`universityName_${i}`]?.value || '',
-          fieldOfStudy: formElements[`fieldOfStudy_${i}`]?.value || '',
-          educationStartDate: formElements[`educationStartDate_${i}`]?.value || '',
-          educationEndDate: formElements[`educationEndDate_${i}`]?.value || '',
-          degree: formElements[`degree_${i}`]?.value || ''
-        });
+      
+      // Collect additional education
+      const additionalEducation = [];
+      for (let i = 1; i <= educationCount; i++) {
+        const eduItem = document.querySelector(`[data-education-id="${i}"]`);
+        if (eduItem) {
+          additionalEducation.push({
+            universityName: formElements[`universityName_${i}`]?.value || '',
+            fieldOfStudy: formElements[`fieldOfStudy_${i}`]?.value || '',
+            educationStartDate: formElements[`educationStartDate_${i}`]?.value || '',
+            educationEndDate: formElements[`educationEndDate_${i}`]?.value || '',
+            degree: formElements[`degree_${i}`]?.value || ''
+          });
+        }
       }
-    }
-    
-    // Create FormData object for file uploads
-    const formData = new FormData();
-    
-    // Add files if uploaded
-    if (uploadedResume) {
-      formData.append('resume', uploadedResume);
-    }
-    
-    if (uploadedCoverLetter) {
-      formData.append('coverLetter', uploadedCoverLetter);
-    }
-    
-    // Prepare profile data matching backend expectations
-    const profileData = {
-      // Personal Information (Step 1)
-      firstName: formElements.firstName.value,
-      middleName: formElements.middleName?.value || '',
-      lastName: formElements.lastName.value,
-      email: formElements.email.value,
-      phone: formElements.phone.value,
-      addressOne: formElements.addressOne.value,
-      addressTwo: formElements.addressTwo?.value || '',
-      zipCode: formElements.zipCode.value,  // Fixed: lowercase 'zipcode' to match HTML name attribute
-      city: formElements.city.value,
-      state: formElements.state.value,
-      country: formElements.country.value,
+      
+      // Collect additional projects
+      const additionalProject = [];
+      for (let i = 1; i <= projectCount; i++) {
+        const projectItem = document.querySelector(`[data-project-id="${i}"]`);
+        if (projectItem) {
+          additionalProject.push({
+            projectTitle: formElements[`projectTitle${i}`]?.value || '',
+            projectSummary: formElements[`projectSummary${i}`]?.value || ''
+          });
+        }
+      }
+      
+      // Create FormData object for file uploads
+      const formData = new FormData();
+      
+      // Add files if uploaded
+      if (uploadedResume) {
+        formData.append('resume', uploadedResume);
+      }
+      
+      if (uploadedCoverLetter) {
+        formData.append('coverLetter', uploadedCoverLetter);
+      }
+      
+      // Prepare profile data matching backend expectations
+      const profileData = {
+        // Personal Information (Step 1)
+        firstName: formElements.firstName.value,
+        middleName: formElements.middleName?.value || '',
+        lastName: formElements.lastName.value,
+        email: formElements.email.value,
+        phone: formElements.phone.value,
+        addressOne: formElements.addressOne.value,
+        addressTwo: formElements.addressTwo?.value || '',
+        zipCode: formElements.zipCode.value,
+        city: formElements.city.value,
+        state: formElements.state.value,
+        country: formElements.country.value,
 
-      // Education (Step 2) - Primary Education
-      universityName: formElements.universityName.value,
-      fieldOfStudy: formElements.fieldOfStudy.value,
-      educationStartDate: formElements.educationStartDate.value,
-      educationEndDate: formElements.educationEndDate && !formElements.educationEndDate.disabled ? formElements.educationEndDate.value : null,
-      degree: formElements.degree.value, 
-      
-      // Additional education
-      additionalEducation: additionalEducation,
-      
-      // Professional Experience (Step 3) - Primary Position
-      jobTitle: formElements.jobTitle.value,
-      companyName: formElements.companyName.value,
-      startDate: formElements.startDate.value,
-      endDate: formElements.endDate && !formElements.endDate.disabled ? formElements.endDate.value : null,
-      currentlyWorking: formElements.currentlyWorking ? formElements.currentlyWorking.checked : false,
-      professionalSummary: formElements.professionalSummary.value,
-      
-      // Additional experiences
-      additionalExperiences: additionalExperiences,
-      
-      // Skills & Expertise (Step 4)
-      skills: skills,
-      linkedin: formElements.linkedin?.value || '',
-      github: formElements.github?.value || '',
-      website: formElements.website?.value || '',
-      
-      // Job Preferences (Step 5)
-      workType: formElements.workType?.value || null,
-      expectedSalary: formElements.expectedSalary?.value || '',
-      preferredLocations: formElements.preferredLocations?.value || '',
-      restrictiveBond: formElements.restrictiveBond?.value || '',
-      
-      // Work Authorization (Step 6)
-      authorized: formElements.authorized?.value || null,
-      sponsorship: formElements.sponsorship?.value || null,
-      visaSponsorship: formElements.visaSponsorship?.value || '',
-      relocate: formElements.relocate?.value || null,
-      
-      // Additional Questions (Step 8)
-      gender: formElements.gender.value,
-      hispanicLatino: formElements.hispanicLatino?.value || '',
-      race: formElements.race?.value || '',
-      veteran: formElements.veteran?.value || '',
-      disability: formElements.disability?.value || ''
-    };
-    
-    // Add all profile data as JSON string to FormData
-    for (const [key, value] of Object.entries(profileData)) {
-      if (key === 'additionalExperiences' || key === 'additionalEducation' || key === 'skills') {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, value === null ? '' : value);
-      }
-    }
-    
-    console.log('Sending data to backend...');
-    console.log('Profile Data:', profileData);
-    console.log('Additional Education:', additionalEducation);
-    console.log('Additional Experiences:', additionalExperiences);
-    console.log('Skills:', skills);
-    console.log('Has Resume:', !!uploadedResume);
-    console.log('Has Cover Letter:', !!uploadedCoverLetter);
-    
-    // Send to backend API
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: formData
-    });
-    
-    const result = await response.json();
-    
-    if (response.ok) {
-      console.log('Profile saved successfully:', result);
-      
-      // Also save to Chrome storage for extension use
-      chrome.storage.local.set({ 
-        userProfile: profileData,
-        profileCompleted: true,
-        profileId: result.data.id
-      }, () => {
-        alert('✅ Profile setup complete! Your information has been saved.');
+        // Education (Step 2) - Primary Education
+        universityName: formElements.universityName.value,
+        fieldOfStudy: formElements.fieldOfStudy.value,
+        educationStartDate: formElements.educationStartDate.value,
+        educationEndDate: formElements.educationEndDate && !formElements.educationEndDate.disabled ? formElements.educationEndDate.value : null,
+        degree: formElements.degree.value, 
         
-        // Close the tab or redirect
-        setTimeout(() => {
-          window.close();
-        }, 1500);
+        // Additional education
+        additionalEducation: additionalEducation,
+        
+        // Professional Experience (Step 3) - Primary Position
+        jobTitle: formElements.jobTitle.value,
+        companyName: formElements.companyName.value,
+        startDate: formElements.startDate.value,
+        endDate: formElements.endDate && !formElements.endDate.disabled ? formElements.endDate.value : null,
+        currentlyWorking: formElements.currentlyWorking ? formElements.currentlyWorking.checked : false,
+        professionalSummary: formElements.professionalSummary.value,
+        
+        // Additional experiences
+        additionalExperiences: additionalExperiences,
+
+        // Projects - ✅ FIXED: Added .value to get text content
+        projectTitle: formElements.projectTitle?.value || '',
+        projectSummary: formElements.projectSummary?.value || '',
+        
+        // Additional Projects - ✅ FIXED: Changed from plural to singular to match backend
+        additionalProject: additionalProject,
+        
+        // Skills & Expertise (Step 4)
+        skills: skills,
+        linkedin: formElements.linkedin?.value || '',
+        github: formElements.github?.value || '',
+        website: formElements.website?.value || '',
+        
+        // Job Preferences (Step 5)
+        workType: formElements.workType?.value || null,
+        expectedSalary: formElements.expectedSalary?.value || '',
+        preferredLocations: formElements.preferredLocations?.value || '',
+        restrictiveBond: formElements.restrictiveBond?.value || '',
+        
+        // Work Authorization (Step 6)
+        authorized: formElements.authorized?.value || null,
+        sponsorship: formElements.sponsorship?.value || null,
+        visaSponsorship: formElements.visaSponsorship?.value || '',
+        relocate: formElements.relocate?.value || null,
+        
+        // Additional Questions (Step 8)
+        gender: formElements.gender.value,
+        hispanicLatino: formElements.hispanicLatino?.value || '',
+        race: formElements.race?.value || '',
+        veteran: formElements.veteran?.value || '',
+        disability: formElements.disability?.value || ''
+      };
+      
+      // Add all profile data as JSON string to FormData
+      for (const [key, value] of Object.entries(profileData)) {
+        if (key === 'additionalExperiences' || key === 'additionalEducation' || key === 'additionalProject' || key === 'skills') {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          formData.append(key, value === null ? '' : value);
+        }
+      }
+      
+      console.log('Sending data to backend...');
+      console.log('Profile Data:', profileData);
+      console.log('Additional Education:', additionalEducation);
+      console.log('Additional Experiences:', additionalExperiences);
+      console.log('Additional Projects:', additionalProject);
+      console.log('Skills:', skills);
+      console.log('Has Resume:', !!uploadedResume);
+      console.log('Has Cover Letter:', !!uploadedCoverLetter);
+      
+      // Send to backend API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: formData
       });
       
-    } else {
-      // Log detailed error information
-      console.error('Backend validation error:', result);
-      console.error('Error details:', result.details || result.message);
+      const result = await response.json();
       
-      const errorMessage = result.details 
-        ? `Validation errors:\n${JSON.stringify(result.details, null, 2)}`
-        : result.error || result.message || 'Failed to save profile';
+      if (response.ok) {
+        console.log('Profile saved successfully:', result);
+        
+        // Also save to Chrome storage for extension use
+        chrome.storage.local.set({ 
+          userProfile: profileData,
+          profileCompleted: true,
+          profileId: result.data.id
+        }, () => {
+          alert('✅ Profile setup complete! Your information has been saved.');
+          
+          // Close the tab or redirect
+          setTimeout(() => {
+            window.close();
+          }, 1500);
+        });
+        
+      } else {
+        // Log detailed error information
+        console.error('Backend validation error:', result);
+        console.error('Error details:', result.details || result.message);
+        
+        const errorMessage = result.details 
+          ? `Validation errors:\n${JSON.stringify(result.details, null, 2)}`
+          : result.error || result.message || 'Failed to save profile';
+        
+        throw new Error(errorMessage);
+      }
       
-      throw new Error(errorMessage);
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('❌ Error saving profile: ' + error.message + '\n\nPlease check your connection and try again.');
+      
+      // Reset button state
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Complete Setup ✓';
     }
-    
-  } catch (error) {
-    console.error('Error saving profile:', error);
-    alert('❌ Error saving profile: ' + error.message + '\n\nPlease check your connection and try again.');
-    
-    // Reset button state
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = 'Complete Setup ✓';
   }
-}
 
   function updateSidebar(step) {
     const stepItems = document.querySelectorAll('.step-item');

@@ -41,6 +41,10 @@ const getFieldValue = (fieldName, profile) => {
         'end_date': profile.end_date,
         'currently_working': profile.currently_working ? 'Yes' : 'No',
         'professional_summary': profile.professional_summary,
+
+        // Projects
+        'project_title': profile.project_title,
+        'project_summary': profile.project_summary,
         
         // Social Links
         'linkedin_url': profile.linkedin_url,
