@@ -68,26 +68,7 @@ body::before {
   flex-direction: column;
   gap: 3px;
   flex: 1; 
-  overflow-y: auto;
-}
-
-/* Webkit browsers (Chrome, Safari, Edge) */
-.steps-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.steps-list::-webkit-scrollbar-track {
-  background: transparent;
-  /* or background: rgba(0, 0, 0, 0.1); for subtle track */
-}
-
-.steps-list::-webkit-scrollbar-thumb {
-  background: rgba(138, 100, 255, 0.5); /* purple to match your theme */
-  border-radius: 4px;
-}
-
-.steps-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(138, 100, 255, 0.7);
+  overflow: none;
 }
 
 /* Firefox */
@@ -197,10 +178,10 @@ body::before {
 .step-item:not(:last-child)::after {
   content: '';
   position: absolute;
-  left: 35px;
+  left: 30px;
   top: 56px;
   width: 2px;
-  height: 24px;
+  height: 22px;
   background: rgba(255, 255, 255, 0.1);
 }
 

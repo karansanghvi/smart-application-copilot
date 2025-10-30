@@ -3,6 +3,7 @@
 const { error, profileEnd } = require('console');
 const Profile = require('../models/Profile');
 const { validationResult } = require('express-validator');
+const { query } = require('../conifg/database'); 
 
 // Create new profile
 exports.createProfile = async (req, res) => {
@@ -505,7 +506,6 @@ exports.updateFiles = async (req, res) => {
 };
 
 // Get profile data formatted for autofill
-// Get profile data formatted for autofill
 exports.getAutofillData = async (req, res) => {
     try {
         const { id } = req.params;
@@ -619,6 +619,317 @@ exports.getAutofillData = async (req, res) => {
         res.status(500).json({
             error: "Failed to fetch autofill data",
             message: error.message
+        });
+    }
+};
+
+// Get education data
+exports.getEducation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { query } = require('../conifg/database');
+        
+        // Get primary education from user_profiles table
+        const profileResult = await query(
+            'SELECT university_name, field_of_study, education_start_date, education_end_date, degree FROM user_profiles WHERE id = $1',
+            [id]
+        );
+        
+        if (profileResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+        
+        // Get additional education from education table
+        const educationResult = await query(
+            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        // Filter out the primary education entry (if it exists in education table)
+        const primaryProfile = profileResult.rows[0];
+        const additionalEducation = educationResult.rows.filter(edu => 
+            edu.university_name !== primaryProfile.university_name ||
+            edu.field_of_study !== primaryProfile.field_of_study
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                primary: {
+                    universityName: primaryProfile.university_name,
+                    fieldOfStudy: primaryProfile.field_of_study,
+                    startDate: primaryProfile.education_start_date,
+                    endDate: primaryProfile.education_end_date,
+                    degree: primaryProfile.degree
+                },
+                additional: additionalEducation.map(edu => ({
+                    id: edu.id,
+                    universityName: edu.university_name,
+                    fieldOfStudy: edu.field_of_study,
+                    startDate: edu.education_start_date,
+                    endDate: edu.education_end_date,
+                    degree: edu.degree
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching education:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch education data',
+            message: error.message 
+        });
+    }
+};
+
+// Update primary education
+exports.updatePrimaryEducation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('📚 Updating primary education for profile:', id);
+        console.log('📤 Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
+        
+        // Update in user_profiles table
+        const result = await query(
+            `UPDATE user_profiles 
+             SET university_name = $1, 
+                 field_of_study = $2, 
+                 education_start_date = $3, 
+                 education_end_date = $4, 
+                 degree = $5,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $6 
+             RETURNING *`,
+            [universityName, fieldOfStudy, startDate, endDate, degree, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+        
+        // Also update in education table if it exists
+        await query(
+            `UPDATE education 
+             SET university_name = $1, 
+                 field_of_study = $2, 
+                 education_start_date = $3, 
+                 education_end_date = $4, 
+                 degree = $5
+             WHERE user_profile_id = $6 
+             AND university_name = (SELECT university_name FROM user_profiles WHERE id = $6)
+             AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $6)`,
+            [universityName, fieldOfStudy, startDate, endDate, degree, id]
+        );
+        
+        console.log('✅ Primary education updated successfully');
+        
+        res.json({ 
+            success: true,
+            message: 'Primary education updated successfully',
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('❌ Error updating primary education:', error);
+        res.status(500).json({ 
+            error: 'Failed to update primary education',
+            message: error.message 
+        });
+    }
+};
+
+// Add additional education
+exports.addAdditionalEducation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('📚 Adding additional education for profile:', id);
+        console.log('📤 Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
+        
+        // Validation
+        if (!universityName || !fieldOfStudy || !startDate || !degree) {
+            return res.status(400).json({ 
+                error: 'Missing required fields: universityName, fieldOfStudy, startDate, degree' 
+            });
+        }
+        
+        // Insert into education table
+        const result = await query(
+            `INSERT INTO education (
+                user_profile_id, university_name, field_of_study, 
+                education_start_date, education_end_date, degree
+            ) VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *`,
+            [id, universityName, fieldOfStudy, startDate, endDate, degree]
+        );
+        
+        console.log('✅ Education added successfully');
+        
+        // Get all additional education to return
+        const allEducation = await query(
+            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Education added successfully',
+            data: allEducation.rows.map(edu => ({
+                id: edu.id,
+                universityName: edu.university_name,
+                fieldOfStudy: edu.field_of_study,
+                startDate: edu.education_start_date,
+                endDate: edu.education_end_date,
+                degree: edu.degree
+            }))
+        });
+    } catch (error) {
+        console.error('❌ Error adding education:', error);
+        console.error('❌ Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to add education',
+            message: error.message
+        });
+    }
+};
+
+// Update additional education by index
+exports.updateAdditionalEducation = async (req, res) => {
+    try {
+        const { id, eduIndex } = req.params;
+        const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('📚 Updating education with ID:', eduIndex);
+        
+        // Get all education entries for this user
+        const allEducation = await query(
+            'SELECT id FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        if (allEducation.rows.length === 0) {
+            return res.status(404).json({ error: 'No education entries found' });
+        }
+        
+        const index = parseInt(eduIndex);
+        if (index < 0 || index >= allEducation.rows.length) {
+            return res.status(400).json({ error: 'Invalid education index' });
+        }
+        
+        // Get the actual education ID at this index
+        const educationId = allEducation.rows[index].id;
+        
+        // Update the education entry
+        const result = await query(
+            `UPDATE education 
+             SET university_name = $1, 
+                 field_of_study = $2, 
+                 education_start_date = $3, 
+                 education_end_date = $4, 
+                 degree = $5
+             WHERE id = $6 AND user_profile_id = $7
+             RETURNING *`,
+            [universityName, fieldOfStudy, startDate, endDate, degree, educationId, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Education entry not found' });
+        }
+        
+        console.log('✅ Education updated successfully');
+        
+        // Get all education to return
+        const allEducationUpdated = await query(
+            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Education updated successfully',
+            data: allEducationUpdated.rows.map(edu => ({
+                id: edu.id,
+                universityName: edu.university_name,
+                fieldOfStudy: edu.field_of_study,
+                startDate: edu.education_start_date,
+                endDate: edu.education_end_date,
+                degree: edu.degree
+            }))
+        });
+    } catch (error) {
+        console.error('❌ Error updating education:', error);
+        res.status(500).json({ 
+            error: 'Failed to update education',
+            message: error.message 
+        });
+    }
+};
+
+// Delete additional education by index
+exports.deleteAdditionalEducation = async (req, res) => {
+    try {
+        const { id, eduIndex } = req.params;
+        const { query } = require('../conifg/database');
+        
+        console.log('🗑️ Deleting education at index:', eduIndex);
+        
+        // Get all education entries for this user
+        const allEducation = await query(
+            'SELECT id FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        if (allEducation.rows.length === 0) {
+            return res.status(404).json({ error: 'No education entries found' });
+        }
+        
+        const index = parseInt(eduIndex);
+        if (index < 0 || index >= allEducation.rows.length) {
+            return res.status(400).json({ error: 'Invalid education index' });
+        }
+        
+        // Get the actual education ID at this index
+        const educationId = allEducation.rows[index].id;
+        
+        // Delete the education entry
+        const result = await query(
+            'DELETE FROM education WHERE id = $1 AND user_profile_id = $2 RETURNING *',
+            [educationId, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Education entry not found' });
+        }
+        
+        console.log('✅ Education deleted successfully');
+        
+        // Get remaining education to return
+        const remainingEducation = await query(
+            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Education deleted successfully',
+            data: remainingEducation.rows.map(edu => ({
+                id: edu.id,
+                universityName: edu.university_name,
+                fieldOfStudy: edu.field_of_study,
+                startDate: edu.education_start_date,
+                endDate: edu.education_end_date,
+                degree: edu.degree
+            }))
+        });
+    } catch (error) {
+        console.error('❌ Error deleting education:', error);
+        res.status(500).json({ 
+            error: 'Failed to delete education',
+            message: error.message 
         });
     }
 };

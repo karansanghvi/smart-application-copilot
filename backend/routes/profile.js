@@ -1,5 +1,3 @@
-// backend/routes/profile.js
-
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
@@ -43,7 +41,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-// Validation middleware for CREATE (strict - all fields required)
+// Validation middleware
 const validateProfile = [
     body('firstName').trim().notEmpty().withMessage('First name is required'),
     body('lastName').trim().notEmpty().withMessage('Last name is required'),
@@ -61,18 +59,17 @@ const validateProfile = [
     body('universityName').trim().notEmpty().withMessage('University Name required'),
     body('fieldOfStudy').trim().notEmpty().withMessage('Field Of Study Is Required'),
     body('educationStartDate').isISO8601().withMessage('Valid start date is required'),
-    body('educationEndDate').isISO8601().withMessage('Valid end date is required'),
+    body('educationEndDate').optional().isISO8601().withMessage('Valid end date required'),
     body('degree').trim().notEmpty().withMessage('Degree is required')
 ];
 
-// Validation middleware for UPDATE (less strict - only validate if field is present)
 const validateProfileUpdate = [
     body('firstName').optional().trim().notEmpty().withMessage('First name cannot be empty'),
     body('lastName').optional().trim().notEmpty().withMessage('Last name cannot be empty'),
     body('email').optional().isEmail().withMessage('Valid email is required'),
     body('phone').optional().trim().notEmpty().withMessage('Phone number cannot be empty'),
     body('addressOne').optional().trim().notEmpty().withMessage('Address cannot be empty'),
-    body('zipCode').trim().notEmpty().withMessage('Zip Code is required'),
+    body('zipCode').optional().trim().notEmpty().withMessage('Zip Code cannot be empty'),
     body('city').optional().trim().notEmpty().withMessage('City cannot be empty'),
     body('state').optional().trim().notEmpty().withMessage('State cannot be empty'),
     body('country').optional().trim().notEmpty().withMessage('Country cannot be empty'),
@@ -80,23 +77,20 @@ const validateProfileUpdate = [
     body('companyName').optional().trim().notEmpty().withMessage('Company name cannot be empty'),
     body('startDate').optional().isISO8601().withMessage('Valid start date is required'),
     body('professionalSummary').optional().trim().notEmpty().withMessage('Professional summary cannot be empty'),
-    body('universityName').trim().notEmpty().withMessage('University Name required'),
-    body('fieldOfStudy').trim().notEmpty().withMessage('Field Of Study Is Required'),
-    body('educationStartDate').isISO8601().withMessage('Valid start date is required'),
-    body('educationEndDate').isISO8601().withMessage('Valid end date is required'),
-    body('degree').trim().notEmpty().withMessage('Degree is required')
+    body('universityName').optional().trim().notEmpty().withMessage('University Name required'),
+    body('fieldOfStudy').optional().trim().notEmpty().withMessage('Field Of Study Is Required'),
+    body('educationStartDate').optional().isISO8601().withMessage('Valid start date is required'),
+    body('educationEndDate').optional().isISO8601().withMessage('Valid end date is required'),
+    body('degree').optional().trim().notEmpty().withMessage('Degree is required')
 ];
 
 const skipValidationForFileUpload = (req, res, next) => {
-    // If files are being uploaded, skip validation
     if (req.files && (req.files.resume || req.files.coverLetter)) {
         console.log('📁 File upload detected, skipping validation');
         return next();
     }
-    // Otherwise, run through validation
     return validateProfileUpdate[0](req, res, (err) => {
         if (err) return next(err);
-        // Run all other validations
         let index = 1;
         const runValidation = () => {
             if (index >= validateProfileUpdate.length) return next();
@@ -110,6 +104,7 @@ const skipValidationForFileUpload = (req, res, next) => {
     });
 };
 
+// Profile CRUD routes
 router.post(
     '/',
     upload.fields([
@@ -121,13 +116,10 @@ router.post(
 );
 
 router.get('/', profileController.getAllProfiles);
-
 router.get('/:id/autofill', profileController.getAutofillData);
-
 router.get('/:id/files', profileController.getFileInfo);
 router.get('/:id/resume', profileController.getResume);
 router.get('/:id/cover-letter', profileController.getCoverLetter);
-
 router.get('/:id', profileController.getProfile);
 
 router.put(
@@ -150,5 +142,12 @@ router.put(
 );
 
 router.delete('/:id', profileController.deleteProfile);
+
+// Education routes
+router.get('/:id/education', profileController.getEducation);
+router.put('/:id/education/primary', profileController.updatePrimaryEducation);
+router.post('/:id/education/additional', profileController.addAdditionalEducation);
+router.put('/:id/education/additional/:eduIndex', profileController.updateAdditionalEducation);
+router.delete('/:id/education/additional/:eduIndex', profileController.deleteAdditionalEducation);
 
 module.exports = router;

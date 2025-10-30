@@ -324,6 +324,7 @@ class Profile {
                 phone: 'phone',
                 addressOne: 'address_line_1',
                 addressTwo: 'address_line_2',
+                zipCode: 'zipcode',
                 city: 'city',
                 state: 'state',
                 country: 'country',

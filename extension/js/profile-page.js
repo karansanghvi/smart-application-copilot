@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentProfile = null;
 let currentProfileId = null;
 let editingExpIndex = null;
+let editingEducationIndex = null;
 let editingSkills = [];
 
 // Display User Profile Data
@@ -106,6 +107,11 @@ function displayUserProfile(profile) {
     const addressTwoEl = document.getElementById('addressTwo');
     if (addressTwoEl) {
         addressTwoEl.textContent = profile.addressTwo || '-';
+    }
+
+    const zipCodeEl = document.getElementById('zipCode');
+    if (zipCodeEl) {
+        zipCodeEl.textContent = profile.zipCode || '-';
     }
 
     const cityEl = document.getElementById('city');
@@ -220,6 +226,7 @@ function displayUserProfile(profile) {
     }
 
     displayWorkExperiences(profile);
+    displayEducation(profile);
     displayAuthorizationInfo(profile);
     displayAdditionalInfo(profile);
     displayUploadedDocuments(profile);
@@ -313,6 +320,41 @@ document.getElementById('cancelEditExpBtn')?.addEventListener('click', () => {
 
 document.getElementById('saveEditExpBtn')?.addEventListener('click', () => {
     saveEditedExperience();
+});
+
+// Primary Education Edit 
+document.getElementById('editPrimaryEducationBtn')?.addEventListener('click', () => {
+    enterEditMode('primaryEducation');
+});
+
+document.getElementById('savePrimaryEducationBtn')?.addEventListener('click', () => {
+    savePrimaryEducation();
+});
+
+document.getElementById('cancelPrimaryEducationBtn')?.addEventListener('click', () => {
+    exitEditMode('primaryEducation');
+});
+
+// Add New Education 
+document.getElementById('addNewEducationBtn')?.addEventListener('click', () => {
+    openAddEducationModal();
+});
+
+document.getElementById('cancelNewEducationBtn')?.addEventListener('click', () => {
+    closeAddEducationModal();
+});
+
+document.getElementById('saveNewEducationBtn')?.addEventListener('click', () => {
+    addNewEducation();
+});
+
+// Edit Additional Education Modal
+document.getElementById('cancelEditEducationModal')?.addEventListener('click', () => {
+    closeEditEducationModal();
+});
+
+document.getElementById('saveEditEducationModal')?.addEventListener('click', () => {
+    saveEditedEducation();
 });
 
 // Edit Skills & Expertise
@@ -424,6 +466,7 @@ function enterEditMode(section) {
         document.getElementById('editPhone').value = currentProfile.phone || '';
         document.getElementById('editAddressOne').value = currentProfile.addressOne || '';
         document.getElementById('editAddressTwo').value = currentProfile.addressTwo || '';
+        document.getElementById('editZipCode').value = currentProfile.zipCode || '';
         document.getElementById('editCity').value = currentProfile.city || '';
         document.getElementById('editState').value = currentProfile.state || '';
         document.getElementById('editCountry').value = currentProfile.country || '';
@@ -500,6 +543,15 @@ function enterEditMode(section) {
         document.getElementById('editRace').value = currentProfile.race || '';
         document.getElementById('editVeteran').value = currentProfile.veteran || '';
         document.getElementById('editDisability').value = currentProfile.disability || '';
+    } else if (section === 'primaryEducation') {
+        document.getElementById('primaryEducationView').style.display = 'none';
+        document.getElementById('primaryEducationEdit').style.display = 'block';
+        
+        document.getElementById('editPrimaryUniversityName').value = currentProfile.universityName || '';
+        document.getElementById('editPrimaryFieldOfStudy').value = currentProfile.fieldOfStudy || '';
+        document.getElementById('editPrimaryEducationStartDate').value = currentProfile.educationStartDate || '';
+        document.getElementById('editPrimaryEducationEndDate').value = currentProfile.educationEndDate || '';
+        document.getElementById('editPrimaryDegree').value = currentProfile.degree || '';
     }
 }
 
@@ -525,6 +577,9 @@ function exitEditMode(section) {
     } else if (section === 'additional') {
         document.getElementById('additionalView').style.display = 'block';
         document.getElementById('additionalEdit').style.display = 'none';
+    } else if (section === 'primaryEducation') {
+        document.getElementById('primaryEducationView').style.display = 'block';
+        document.getElementById('primaryEducationEdit').style.display = 'none';
     }
 }
 
@@ -546,6 +601,7 @@ async function savePersonalInfo() {
         phone: document.getElementById('editPhone').value.trim(),
         addressOne: document.getElementById('editAddressOne').value.trim(),
         addressTwo: document.getElementById('editAddressTwo').value.trim(),
+        zipCode: document.getElementById('editZipCode').value.trim(),
         city: document.getElementById('editCity').value.trim(),
         state: document.getElementById('editState').value.trim(),
         country: document.getElementById('editCountry').value.trim()
@@ -588,6 +644,430 @@ async function savePersonalInfo() {
         console.error('❌ Error updating profile:', error);
         alert(`❌ Failed to update profile: ${error.message}`);
     }
+}
+
+// Display Add Education Data 
+function displayEducation(profile) {
+    displayPrimaryEducation(profile);
+    displayAdditionalEducation(profile);
+}
+
+// Display Primary Education
+function displayPrimaryEducation(profile) {
+    const universityName = profile.universityName || profile.university_name;
+    const fieldOfStudy = profile.fieldOfStudy || profile.field_of_study;
+    const educationStartDate = profile.educationStartDate || profile.education_start_date;
+    const educationEndDate = profile.educationEndDate || profile.education_end_date;
+    const degree = profile.degree;
+    
+    const universityNameEl = document.getElementById('viewUniversityName');
+    if (universityNameEl) {
+        universityNameEl.textContent = universityName || 'Not specified';
+    }
+
+    const fieldOfStudyEl = document.getElementById('viewFieldOfStudy');
+    if (fieldOfStudyEl) {
+        fieldOfStudyEl.textContent = fieldOfStudy || 'Not specified';
+    }
+
+    const startDateEl = document.getElementById('viewEducationStartDate');
+    if (startDateEl) {
+        if (educationStartDate) {
+            const date = new Date(educationStartDate);
+            startDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else {
+            startDateEl.textContent = 'Not specified';
+        }
+    }
+
+    const endDateEl = document.getElementById('viewEducationEndDate');
+    if (endDateEl) {
+        if (educationEndDate) {
+            const date = new Date(educationEndDate);
+            endDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else {
+            endDateEl.textContent = 'Present';
+        }
+    }
+
+    const degreeEl = document.getElementById('viewDegree');
+    if (degreeEl) {
+        degreeEl.textContent = formatDegree(degree) || 'Not specified';
+    }
+}
+
+// Display Additional Education
+function displayAdditionalEducation(profile) {
+    const containerEl = document.getElementById('additionalEducationContainer');
+    
+    if (!containerEl) return;
+
+    const educationArray = profile.education || profile.additionalEducation || [];
+    
+    if (educationArray.length === 0) {
+        containerEl.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">No additional education added yet</p>';
+        return;
+    }
+    
+    containerEl.innerHTML = '';
+    
+    educationArray.forEach((edu, index) => {
+        const universityName = edu.universityName || edu.university_name || 'Not specified';
+        const fieldOfStudy = edu.fieldOfStudy || edu.field_of_study || 'Not specified';
+        const startDate = edu.startDate || edu.education_start_date;
+        const endDate = edu.endDate || edu.education_end_date;
+        const degree = edu.degree;
+        
+        const startDateFormatted = startDate ? new Date(startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified';
+        const endDateFormatted = endDate ? new Date(endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Present';
+        
+        const educationHTML = `
+            <div class="education-item" data-index="${index}" style="position: relative; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div class="education-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        Education ${index + 1}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="edit-edu-btn" data-index="${index}" title="Edit" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Edit
+                        </button>
+                        <button type="button" class="delete-edu-btn" data-index="${index}" title="Delete" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">University Name</label>
+                    <div class="data-box">
+                        <span class="dataText" style="color: white;">${universityName}</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">Field of Study</label>
+                    <div class="data-box">
+                        <span class="dataText" style="color: white;">${fieldOfStudy}</span>
+                    </div>
+                </div>
+
+                <div class="form-grid-two">
+                    <div class="form-group">
+                        <label style="color: white;">Degree</label>
+                        <div class="data-box">
+                            <span class="dataText" style="color: white;">${formatDegree(degree)}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: white;">Date Range</label>
+                        <div class="data-box">
+                            <span class="dataText" style="color: white;">${startDateFormatted} - ${endDateFormatted}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        containerEl.innerHTML += educationHTML;
+    });
+    
+    document.querySelectorAll('.edit-edu-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            editAdditionalEducation(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-edu-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            deleteAdditionalEducation(index);
+        });
+    });
+}
+
+// Save Primary Education
+async function savePrimaryEducation() {
+    console.log('Saving primary education...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+    
+    const updatedData = {
+        universityName: document.getElementById('editPrimaryUniversityName').value.trim(),
+        fieldOfStudy: document.getElementById('editPrimaryFieldOfStudy').value.trim(),
+        startDate: document.getElementById('editPrimaryEducationStartDate').value.trim(),
+        endDate: document.getElementById('editPrimaryEducationEndDate').value.trim(),
+        degree: document.getElementById('editPrimaryDegree').value
+    };
+    
+    // Validation
+    if (!updatedData.universityName || !updatedData.fieldOfStudy || !updatedData.startDate || !updatedData.degree) {
+        alert('⚠️ Please fill in all required fields');
+        return;
+    }
+    
+    console.log('Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/education/primary`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update education');
+        }
+        
+        const result = await response.json();
+        console.log('Update successful:', result);
+        
+        // Update local profile
+        currentProfile = {
+            ...currentProfile,
+            universityName: updatedData.universityName,
+            fieldOfStudy: updatedData.fieldOfStudy,
+            educationStartDate: updatedData.startDate,
+            educationEndDate: updatedData.endDate,
+            degree: updatedData.degree
+        };
+        
+        // Update storage
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            console.log('Updated local storage');
+            displayEducation(currentProfile);
+            exitEditMode('primaryEducation');
+            alert('Primary education updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('Error updating primary education:', error);
+        alert(`Failed to update primary education: ${error.message}`);
+    }
+}
+
+// Add New Education
+async function addNewEducation() {
+    const universityName = document.getElementById('newUniversityName').value.trim();
+    const fieldOfStudy = document.getElementById('newFieldOfStudy').value.trim();
+    const startDate = document.getElementById('newEducationStartDate').value.trim();
+    const endDate = document.getElementById('newEducationEndDate').value.trim();
+    const degree = document.getElementById('newDegree').value;
+
+    if (!universityName || !fieldOfStudy || !startDate || !degree) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const newEducation = {
+        universityName,
+        fieldOfStudy,
+        startDate,
+        endDate: endDate || null,
+        degree
+    };
+    
+    console.log('Adding new education:', newEducation);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/education/additional`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newEducation)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to add education');
+        }
+        
+        const result = await response.json();
+        console.log('Education added successfully:', result);
+        
+        // Update local profile - note the response structure
+        if (!currentProfile.education) {
+            currentProfile.education = [];
+        }
+        currentProfile.education = result.data;
+        
+        // Update storage
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayEducation(currentProfile);
+            closeAddEducationModal();
+            alert('Education added successfully!');
+        });
+        
+    } catch (error) {
+        console.error('Error adding education:', error);
+        alert(`Failed to add education: ${error.message}`);
+    }
+}
+
+// Edit Additional Education
+function editAdditionalEducation(index) {
+    editingEducationIndex = index;
+    const edu = currentProfile.education[index];
+    
+    // Handle both formats
+    const universityName = edu.universityName || edu.university_name || '';
+    const fieldOfStudy = edu.fieldOfStudy || edu.field_of_study || '';
+    const startDate = edu.startDate || edu.education_start_date || '';
+    const endDate = edu.endDate || edu.education_end_date || '';
+    const degree = edu.degree || '';
+    
+    // Populate edit modal
+    document.getElementById('editModalUniversityName').value = universityName;
+    document.getElementById('editModalFieldOfStudy').value = fieldOfStudy;
+    document.getElementById('editModalEducationStartDate').value = startDate;
+    document.getElementById('editModalEducationEndDate').value = endDate;
+    document.getElementById('editModalDegree').value = degree;
+    
+    // Show modal
+    document.getElementById('editEducationModal').style.display = 'block';
+}
+
+// Save Edited Education
+async function saveEditedEducation() {
+    if (editingEducationIndex === null) return;
+    
+    const universityName = document.getElementById('editModalUniversityName').value.trim();
+    const fieldOfStudy = document.getElementById('editModalFieldOfStudy').value.trim();
+    const startDate = document.getElementById('editModalEducationStartDate').value.trim();
+    const endDate = document.getElementById('editModalEducationEndDate').value.trim();
+    const degree = document.getElementById('editModalDegree').value;
+    
+    // Validation
+    if (!universityName || !fieldOfStudy || !startDate || !degree) {
+        alert('Please fill in all required fields');
+        return;
+    }
+    
+    const updatedEducation = {
+        universityName,
+        fieldOfStudy,
+        startDate,
+        endDate: endDate || null,
+        degree
+    };
+    
+    console.log('Updating education:', updatedEducation);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/education/additional/${editingEducationIndex}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedEducation)
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update education');
+        }
+        
+        const result = await response.json();
+        console.log('Education updated successfully:', result);
+        
+        // Update local profile
+        currentProfile.education = result.data;
+        
+        // Update storage
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayEducation(currentProfile);
+            closeEditEducationModal();
+            editingEducationIndex = null;
+            alert('Education updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('Error updating education:', error);
+        alert(`Failed to update education: ${error.message}`);
+    }
+}
+
+// Delete Additional Education
+async function deleteAdditionalEducation(index) {
+    if (!confirm('Are you sure you want to delete this education entry?')) {
+        return;
+    }
+    
+    console.log('Deleting education at index:', index);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/education/additional/${index}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete education');
+        }
+        
+        const result = await response.json();
+        console.log('Education deleted successfully:', result);
+        
+        // Update local profile
+        currentProfile.education = result.data;
+        
+        // Update storage
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayEducation(currentProfile);
+            alert('Education deleted successfully!');
+        });
+        
+    } catch (error) {
+        console.error('Error deleting education:', error);
+        alert(`Failed to delete education: ${error.message}`);
+    }
+}
+
+function openAddEducationModal() {
+    document.getElementById('newUniversityName').value = '';
+    document.getElementById('newFieldOfStudy').value = '';
+    document.getElementById('newEducationStartDate').value = '';
+    document.getElementById('newEducationEndDate').value = '';
+    document.getElementById('newDegree').value = '';
+    document.getElementById('addEducationModal').style.display = 'block';
+}
+
+function closeAddEducationModal() {
+    document.getElementById('addEducationModal').style.display = 'none';
+}
+
+function closeEditEducationModal() {
+    document.getElementById('editEducationModal').style.display = 'none';
+    editingEducationIndex = null;
+}
+
+function formatDegree(value) {
+    if (!value) return 'Not specified';
+    
+    const degreeMap = {
+        'highSchool': 'High School',
+        'associateDegree': "Associate's Degree",
+        'bachelorsDegree': "Bachelor's Degree",
+        'mastersDegree': "Master's Degree",
+        'mbaDegree': 'Master of Business Administration (MBA)',
+        'jurisDegree': 'Juris Degree (JD)',
+        'doctorOfMedicine': 'Doctor of Medicine',
+        'doctorOfPhilosophy': 'Doctor of Philosophy (PhD)',
+        'engineerDegree': 'Engineer Degree',
+        'otherDegree': 'Other'
+    };
+    
+    return degreeMap[value] || value;
 }
 
 // Edit and Update For Work & Additional Experience
@@ -813,6 +1293,219 @@ async function updateAdditionalExperiences(additionalExperiences) {
         console.error('❌ Error updating experiences:', error);
         alert(`❌ Failed to update experiences: ${error.message}`);
     }
+}
+
+// Display Work Experiences
+function displayWorkExperiences(profile) {
+    displayPrimaryExperience(profile);
+    
+    displayAdditionalExperiences(profile);
+}
+
+// Display Primary Experience
+function displayPrimaryExperience(profile) {
+    // Job Title
+    const jobTitleEl = document.getElementById('jobTitle');
+    if (jobTitleEl) {
+        jobTitleEl.textContent = profile.jobTitle || 'Not specified';
+    }
+
+    // Company Name
+    const companyNameEl = document.getElementById('companyName');
+    if (companyNameEl) {
+        companyNameEl.textContent = profile.companyName || 'Not specified';
+    }
+
+    // Start Date
+    const startDateEl = document.getElementById('startDate');
+    if (startDateEl) {
+        if (profile.startDate) {
+            const date = new Date(profile.startDate);
+            startDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else {
+            startDateEl.textContent = 'Not specified';
+        }
+    }
+
+    // End Date
+    const endDateEl = document.getElementById('endDate');
+    if (endDateEl) {
+        if (profile.currentlyWorking) {
+            endDateEl.textContent = 'Present';
+            endDateEl.style.color = '#10b981';
+            endDateEl.style.fontWeight = '600';
+        } else if (profile.endDate) {
+            const date = new Date(profile.endDate);
+            endDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        } else {
+            endDateEl.textContent = 'Not specified';
+        }
+    }
+
+    // Currently Working Status
+    const currentlyWorkingEl = document.getElementById('currentlyWorkingStatus');
+    if (currentlyWorkingEl) {
+        if (profile.currentlyWorking) {
+            currentlyWorkingEl.textContent = '✓ Yes, currently working here';
+            currentlyWorkingEl.style.color = '#10b981';
+            currentlyWorkingEl.style.fontWeight = '600';
+        } else {
+            currentlyWorkingEl.textContent = '✗ No longer working here';
+            currentlyWorkingEl.style.color = 'rgba(255, 255, 255, 0.7)';
+        }
+    }
+
+    // Professional Summary
+    const summaryEl = document.getElementById('professionalSummary');
+    if (summaryEl) {
+        summaryEl.textContent = profile.professionalSummary || 'No summary provided';
+    }
+}
+
+// Display Additional Experiences
+function displayAdditionalExperiences(profile) {
+    const sectionEl = document.getElementById('additionalExperiencesSection');
+    const containerEl = document.getElementById('additionalExperiencesContainer');
+    
+    if (!containerEl) return;
+    
+    // Check if there are additional experiences
+    if (!profile.additionalExperiences || profile.additionalExperiences.length === 0) {
+        sectionEl.style.display = 'none';
+        return;
+    }
+    
+    // Show the section
+    sectionEl.style.display = 'block';
+    
+    // Clear existing content
+    containerEl.innerHTML = '';
+    
+    // Display each additional experience
+    profile.additionalExperiences.forEach((exp, index) => {
+        const duration = calculateDuration(exp.startDate, exp.endDate, exp.currentlyWorking);
+        const startDateFormatted = exp.startDate ? new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified';
+        const endDateFormatted = exp.currentlyWorking ? 'Present' : (exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified');
+        
+        const experienceHTML = `
+            <div class="experience-item additional-experience" data-index="${index}" style="position: relative; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div class="experience-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        Position ${index + 1}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="edit-exp-btn" data-index="${index}" title="Edit" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Edit
+                        </button>
+                        <button type="button" class="delete-exp-btn" data-index="${index}" title="Delete" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">Job Title</label>
+                    <div class="data-box">
+                        <span class="dataText" style="color: white;">${exp.jobTitle || 'Not specified'}</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">Company</label>
+                    <div class="data-box">
+                        <span class="dataText" style="color: white;">${exp.companyName || 'Not specified'}</span>
+                    </div>
+                </div>
+
+                <div class="form-grid-two">
+                    <div class="form-group">
+                        <label style="color: white;">Duration</label>
+                        <div class="data-box">
+                            <span class="dataText" style="color: white;">${duration}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: white;">Date Range</label>
+                        <div class="data-box">
+                            <span class="dataText" style="color: white;">${startDateFormatted} - ${endDateFormatted}</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${exp.jobDescription ? `
+                    <div class="form-group">
+                        <label style="color: white;">Job Description</label>
+                        <div class="data-box" style="min-height: 60px;">
+                            <span class="dataText" style="color: white; white-space: pre-wrap;">${exp.jobDescription}</span>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        containerEl.innerHTML += experienceHTML;
+    });
+    
+    // Add event listeners to edit and delete buttons
+    document.querySelectorAll('.edit-exp-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            editAdditionalExperience(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-exp-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            deleteAdditionalExperience(index);
+        });
+    });
+}
+
+// Calculate Duration Between Two Dates (additional experiences)
+function calculateDuration(startDate, endDate, currentlyWorking) {
+    if (!startDate) return 'Duration not specified';
+    
+    const start = new Date(startDate);
+    const end = currentlyWorking ? new Date() : (endDate ? new Date(endDate) : new Date());
+    
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const months = Math.floor(diffDays / 30);
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    if (years === 0 && remainingMonths === 0) return '1 month';
+    
+    let duration = '';
+    if (years > 0) duration += `${years} year${years > 1 ? 's' : ''}`;
+    if (remainingMonths > 0) {
+        if (duration) duration += ', ';
+        duration += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+    }
+    
+    return duration || '1 month';
+}
+
+// Format Date Range for Work Experience (additional experiences)
+function formatDateRange(startDate, endDate, currentlyWorking) {
+    if (!startDate) return '-';
+    
+    const start = new Date(startDate);
+    const startFormatted = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    
+    if (currentlyWorking) {
+        return `${startFormatted} - Present`;
+    }
+    
+    if (!endDate) {
+        return startFormatted;
+    }
+    
+    const end = new Date(endDate);
+    const endFormatted = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    
+    return `${startFormatted} - ${endFormatted}`;
 }
 
 // Edit and Update For Skills & Expertise
@@ -1080,61 +1773,6 @@ async function uploadDocument(file, type) {
     } catch (error) {
         console.error(`❌ Error uploading ${type}:`, error);
         alert(`❌ Failed to upload ${type === 'resume' ? 'resume' : 'cover letter'}: ${error.message}`);
-    }
-}
-
-// Save Additional Questions
-async function saveAdditional() {
-    console.log('💾 Saving additional questions...');
-    
-    if (!currentProfileId) {
-        alert('Error: Profile ID not found');
-        return;
-    }
-
-    const updatedData = {
-        ...currentProfile,
-        gender: document.getElementById('editGender').value,
-        hispanicLatino: document.getElementById('editHispanicLatino').value,
-        race: document.getElementById('editRace').value,
-        veteran: document.getElementById('editVeteran').value,
-        disability: document.getElementById('editDisability').value
-    };
-    
-    console.log('📤 Sending data:', updatedData);
-    
-    try {
-        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(updatedData)
-        });
-        
-        console.log('📡 Response status:', response.status);
-        
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('❌ Error response:', errorData);
-            throw new Error(errorData.error || 'Failed to update profile');
-        }
-        
-        const result = await response.json();
-        console.log('✅ Update successful:', result);
-        
-        chrome.storage.local.set({ userProfile: updatedData }, () => {
-            console.log('💾 Updated local storage');
-            
-            currentProfile = updatedData;
-            displayUserProfile(updatedData);
-            exitEditMode('additional');
-            alert('✅ Additional questions updated successfully!');
-        });
-        
-    } catch (error) {
-        console.error('❌ Error updating additional questions:', error);
-        alert(`❌ Failed to update additional questions: ${error.message}`);
     }
 }
 
@@ -1417,6 +2055,61 @@ function formatFileSize(bytes) {
     return `${size} ${sizes[i]}`;
 }
 
+// Save Additional Questions
+async function saveAdditional() {
+    console.log('💾 Saving additional questions...');
+    
+    if (!currentProfileId) {
+        alert('Error: Profile ID not found');
+        return;
+    }
+
+    const updatedData = {
+        ...currentProfile,
+        gender: document.getElementById('editGender').value,
+        hispanicLatino: document.getElementById('editHispanicLatino').value,
+        race: document.getElementById('editRace').value,
+        veteran: document.getElementById('editVeteran').value,
+        disability: document.getElementById('editDisability').value
+    };
+    
+    console.log('📤 Sending data:', updatedData);
+    
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        console.log('📡 Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('❌ Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update profile');
+        }
+        
+        const result = await response.json();
+        console.log('✅ Update successful:', result);
+        
+        chrome.storage.local.set({ userProfile: updatedData }, () => {
+            console.log('💾 Updated local storage');
+            
+            currentProfile = updatedData;
+            displayUserProfile(updatedData);
+            exitEditMode('additional');
+            alert('✅ Additional questions updated successfully!');
+        });
+        
+    } catch (error) {
+        console.error('❌ Error updating additional questions:', error);
+        alert(`❌ Failed to update additional questions: ${error.message}`);
+    }
+}
+
 // Format Date - Additional Info
 function formatDate(dateString) {
     if (!dateString) return 'Unknown date';
@@ -1505,217 +2198,4 @@ function formatDisabilityStatus(value) {
     };
     
     return disabilityMap[value] || value;
-}
-
-// Display Work Experiences
-function displayWorkExperiences(profile) {
-    displayPrimaryExperience(profile);
-    
-    displayAdditionalExperiences(profile);
-}
-
-// Display Primary Experience
-function displayPrimaryExperience(profile) {
-    // Job Title
-    const jobTitleEl = document.getElementById('jobTitle');
-    if (jobTitleEl) {
-        jobTitleEl.textContent = profile.jobTitle || 'Not specified';
-    }
-
-    // Company Name
-    const companyNameEl = document.getElementById('companyName');
-    if (companyNameEl) {
-        companyNameEl.textContent = profile.companyName || 'Not specified';
-    }
-
-    // Start Date
-    const startDateEl = document.getElementById('startDate');
-    if (startDateEl) {
-        if (profile.startDate) {
-            const date = new Date(profile.startDate);
-            startDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        } else {
-            startDateEl.textContent = 'Not specified';
-        }
-    }
-
-    // End Date
-    const endDateEl = document.getElementById('endDate');
-    if (endDateEl) {
-        if (profile.currentlyWorking) {
-            endDateEl.textContent = 'Present';
-            endDateEl.style.color = '#10b981';
-            endDateEl.style.fontWeight = '600';
-        } else if (profile.endDate) {
-            const date = new Date(profile.endDate);
-            endDateEl.textContent = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        } else {
-            endDateEl.textContent = 'Not specified';
-        }
-    }
-
-    // Currently Working Status
-    const currentlyWorkingEl = document.getElementById('currentlyWorkingStatus');
-    if (currentlyWorkingEl) {
-        if (profile.currentlyWorking) {
-            currentlyWorkingEl.textContent = '✓ Yes, currently working here';
-            currentlyWorkingEl.style.color = '#10b981';
-            currentlyWorkingEl.style.fontWeight = '600';
-        } else {
-            currentlyWorkingEl.textContent = '✗ No longer working here';
-            currentlyWorkingEl.style.color = 'rgba(255, 255, 255, 0.7)';
-        }
-    }
-
-    // Professional Summary
-    const summaryEl = document.getElementById('professionalSummary');
-    if (summaryEl) {
-        summaryEl.textContent = profile.professionalSummary || 'No summary provided';
-    }
-}
-
-// Display Additional Experiences
-function displayAdditionalExperiences(profile) {
-    const sectionEl = document.getElementById('additionalExperiencesSection');
-    const containerEl = document.getElementById('additionalExperiencesContainer');
-    
-    if (!containerEl) return;
-    
-    // Check if there are additional experiences
-    if (!profile.additionalExperiences || profile.additionalExperiences.length === 0) {
-        sectionEl.style.display = 'none';
-        return;
-    }
-    
-    // Show the section
-    sectionEl.style.display = 'block';
-    
-    // Clear existing content
-    containerEl.innerHTML = '';
-    
-    // Display each additional experience
-    profile.additionalExperiences.forEach((exp, index) => {
-        const duration = calculateDuration(exp.startDate, exp.endDate, exp.currentlyWorking);
-        const startDateFormatted = exp.startDate ? new Date(exp.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified';
-        const endDateFormatted = exp.currentlyWorking ? 'Present' : (exp.endDate ? new Date(exp.endDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Not specified');
-        
-        const experienceHTML = `
-            <div class="experience-item additional-experience" data-index="${index}" style="position: relative; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <div class="experience-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
-                        Position ${index + 1}
-                    </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="button" class="edit-exp-btn" data-index="${index}" title="Edit" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
-                            ✏️ Edit
-                        </button>
-                        <button type="button" class="delete-exp-btn" data-index="${index}" title="Delete" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
-                            🗑️ Delete
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label style="color: white;">Job Title</label>
-                    <div class="data-box">
-                        <span class="dataText" style="color: white;">${exp.jobTitle || 'Not specified'}</span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label style="color: white;">Company</label>
-                    <div class="data-box">
-                        <span class="dataText" style="color: white;">${exp.companyName || 'Not specified'}</span>
-                    </div>
-                </div>
-
-                <div class="form-grid-two">
-                    <div class="form-group">
-                        <label style="color: white;">Duration</label>
-                        <div class="data-box">
-                            <span class="dataText" style="color: white;">${duration}</span>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label style="color: white;">Date Range</label>
-                        <div class="data-box">
-                            <span class="dataText" style="color: white;">${startDateFormatted} - ${endDateFormatted}</span>
-                        </div>
-                    </div>
-                </div>
-
-                ${exp.jobDescription ? `
-                    <div class="form-group">
-                        <label style="color: white;">Job Description</label>
-                        <div class="data-box" style="min-height: 60px;">
-                            <span class="dataText" style="color: white; white-space: pre-wrap;">${exp.jobDescription}</span>
-                        </div>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        
-        containerEl.innerHTML += experienceHTML;
-    });
-    
-    // Add event listeners to edit and delete buttons
-    document.querySelectorAll('.edit-exp-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.currentTarget.getAttribute('data-index'));
-            editAdditionalExperience(index);
-        });
-    });
-    
-    document.querySelectorAll('.delete-exp-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.currentTarget.getAttribute('data-index'));
-            deleteAdditionalExperience(index);
-        });
-    });
-}
-
-// Calculate Duration Between Two Dates (additional experiences)
-function calculateDuration(startDate, endDate, currentlyWorking) {
-    if (!startDate) return 'Duration not specified';
-    
-    const start = new Date(startDate);
-    const end = currentlyWorking ? new Date() : (endDate ? new Date(endDate) : new Date());
-    
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const months = Math.floor(diffDays / 30);
-    const years = Math.floor(months / 12);
-    const remainingMonths = months % 12;
-    
-    if (years === 0 && remainingMonths === 0) return '1 month';
-    
-    let duration = '';
-    if (years > 0) duration += `${years} year${years > 1 ? 's' : ''}`;
-    if (remainingMonths > 0) {
-        if (duration) duration += ', ';
-        duration += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
-    }
-    
-    return duration || '1 month';
-}
-
-// Format Date Range for Work Experience (additional experiences)
-function formatDateRange(startDate, endDate, currentlyWorking) {
-    if (!startDate) return '-';
-    
-    const start = new Date(startDate);
-    const startFormatted = start.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    
-    if (currentlyWorking) {
-        return `${startFormatted} - Present`;
-    }
-    
-    if (!endDate) {
-        return startFormatted;
-    }
-    
-    const end = new Date(endDate);
-    const endFormatted = end.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    
-    return `${startFormatted} - ${endFormatted}`;
 }
