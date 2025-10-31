@@ -150,4 +150,11 @@ router.post('/:id/education/additional', profileController.addAdditionalEducatio
 router.put('/:id/education/additional/:eduIndex', profileController.updateAdditionalEducation);
 router.delete('/:id/education/additional/:eduIndex', profileController.deleteAdditionalEducation);
 
+// Project routes
+router.get('/:id/projects', profileController.getProjects);
+router.put('/:id/projects/primary', profileController.updatePrimaryProject);
+router.post('/:id/projects/additional', profileController.addAdditionalProject);
+router.put('/:id/projects/additional/:projIndex', profileController.updateAdditionalProject);
+router.delete('/:id/projects/additional/:projIndex', profileController.deleteAdditionalProject);
+
 module.exports = router;

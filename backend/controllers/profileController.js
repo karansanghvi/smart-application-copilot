@@ -639,30 +639,27 @@ exports.getEducation = async (req, res) => {
             return res.status(404).json({ error: 'Profile not found' });
         }
         
-        // Get additional education from education table
+        // Get additional education from education table (excluding primary)
         const educationResult = await query(
-            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree 
+             FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
-        );
-        
-        // Filter out the primary education entry (if it exists in education table)
-        const primaryProfile = profileResult.rows[0];
-        const additionalEducation = educationResult.rows.filter(edu => 
-            edu.university_name !== primaryProfile.university_name ||
-            edu.field_of_study !== primaryProfile.field_of_study
         );
         
         res.json({
             success: true,
             data: {
                 primary: {
-                    universityName: primaryProfile.university_name,
-                    fieldOfStudy: primaryProfile.field_of_study,
-                    startDate: primaryProfile.education_start_date,
-                    endDate: primaryProfile.education_end_date,
-                    degree: primaryProfile.degree
+                    universityName: profileResult.rows[0].university_name,
+                    fieldOfStudy: profileResult.rows[0].field_of_study,
+                    startDate: profileResult.rows[0].education_start_date,
+                    endDate: profileResult.rows[0].education_end_date,
+                    degree: profileResult.rows[0].degree
                 },
-                additional: additionalEducation.map(edu => ({
+                additional: educationResult.rows.map(edu => ({
                     id: edu.id,
                     universityName: edu.university_name,
                     fieldOfStudy: edu.field_of_study,
@@ -673,7 +670,7 @@ exports.getEducation = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Error fetching education:', error);
+        console.error('Error fetching education:', error);
         res.status(500).json({ 
             error: 'Failed to fetch education data',
             message: error.message 
@@ -688,11 +685,11 @@ exports.updatePrimaryEducation = async (req, res) => {
         const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
         const { query } = require('../conifg/database');
         
-        console.log('📚 Updating primary education for profile:', id);
-        console.log('📤 Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
+        console.log('Updating primary education for profile:', id);
+        console.log('Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
         
         // Update in user_profiles table
-        const result = await query(
+        const profileResult = await query(
             `UPDATE user_profiles 
              SET university_name = $1, 
                  field_of_study = $2, 
@@ -705,33 +702,55 @@ exports.updatePrimaryEducation = async (req, res) => {
             [universityName, fieldOfStudy, startDate, endDate, degree, id]
         );
         
-        if (result.rows.length === 0) {
+        if (profileResult.rows.length === 0) {
             return res.status(404).json({ error: 'Profile not found' });
         }
         
-        // Also update in education table if it exists
-        await query(
-            `UPDATE education 
-             SET university_name = $1, 
-                 field_of_study = $2, 
-                 education_start_date = $3, 
-                 education_end_date = $4, 
-                 degree = $5
-             WHERE user_profile_id = $6 
-             AND university_name = (SELECT university_name FROM user_profiles WHERE id = $6)
-             AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $6)`,
-            [universityName, fieldOfStudy, startDate, endDate, degree, id]
+        // Also sync to education table
+        // Check if a primary education already exists in education table for this user
+        const existingPrimaryEducation = await query(
+            `SELECT id FROM education 
+             WHERE user_profile_id = $1 
+             AND is_primary = true 
+             LIMIT 1`,
+            [id]
         );
         
-        console.log('✅ Primary education updated successfully');
+        if (existingPrimaryEducation.rows.length > 0) {
+            // Update existing primary education
+            await query(
+                `UPDATE education 
+                 SET university_name = $1, 
+                     field_of_study = $2, 
+                     education_start_date = $3, 
+                     education_end_date = $4, 
+                     degree = $5,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $6 AND user_profile_id = $7`,
+                [universityName, fieldOfStudy, startDate, endDate, degree, existingPrimaryEducation.rows[0].id, id]
+            );
+            console.log('Primary education updated in education table');
+        } else {
+            // Insert new primary education
+            await query(
+                `INSERT INTO education (
+                    user_profile_id, university_name, field_of_study, 
+                    education_start_date, education_end_date, degree, is_primary
+                ) VALUES ($1, $2, $3, $4, $5, $6, true)`,
+                [id, universityName, fieldOfStudy, startDate, endDate, degree]
+            );
+            console.log('Primary education inserted into education table');
+        }
+        
+        console.log('Primary education updated successfully');
         
         res.json({ 
             success: true,
             message: 'Primary education updated successfully',
-            data: result.rows[0]
+            data: profileResult.rows[0]
         });
     } catch (error) {
-        console.error('❌ Error updating primary education:', error);
+        console.error('Error updating primary education:', error);
         res.status(500).json({ 
             error: 'Failed to update primary education',
             message: error.message 
@@ -746,8 +765,8 @@ exports.addAdditionalEducation = async (req, res) => {
         const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
         const { query } = require('../conifg/database');
         
-        console.log('📚 Adding additional education for profile:', id);
-        console.log('📤 Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
+        console.log('Adding additional education for profile:', id);
+        console.log('Data:', { universityName, fieldOfStudy, startDate, endDate, degree });
         
         // Validation
         if (!universityName || !fieldOfStudy || !startDate || !degree) {
@@ -756,21 +775,25 @@ exports.addAdditionalEducation = async (req, res) => {
             });
         }
         
-        // Insert into education table
+        // Insert into education table (explicitly set is_primary to false)
         const result = await query(
             `INSERT INTO education (
                 user_profile_id, university_name, field_of_study, 
-                education_start_date, education_end_date, degree
-            ) VALUES ($1, $2, $3, $4, $5, $6)
+                education_start_date, education_end_date, degree, is_primary
+            ) VALUES ($1, $2, $3, $4, $5, $6, false)
             RETURNING *`,
             [id, universityName, fieldOfStudy, startDate, endDate, degree]
         );
         
-        console.log('✅ Education added successfully');
+        console.log('Education added successfully');
         
-        // Get all additional education to return
+        // Get all additional education to return (excluding primary)
         const allEducation = await query(
-            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree 
+             FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
         );
         
@@ -787,8 +810,8 @@ exports.addAdditionalEducation = async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('❌ Error adding education:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('Error adding education:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({ 
             error: 'Failed to add education',
             message: error.message
@@ -803,16 +826,19 @@ exports.updateAdditionalEducation = async (req, res) => {
         const { universityName, fieldOfStudy, startDate, endDate, degree } = req.body;
         const { query } = require('../conifg/database');
         
-        console.log('📚 Updating education with ID:', eduIndex);
+        console.log('Updating education with index:', eduIndex);
         
-        // Get all education entries for this user
+        // Get all additional education entries for this user (excluding primary)
         const allEducation = await query(
-            'SELECT id FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
         );
         
         if (allEducation.rows.length === 0) {
-            return res.status(404).json({ error: 'No education entries found' });
+            return res.status(404).json({ error: 'No additional education entries found' });
         }
         
         const index = parseInt(eduIndex);
@@ -823,15 +849,16 @@ exports.updateAdditionalEducation = async (req, res) => {
         // Get the actual education ID at this index
         const educationId = allEducation.rows[index].id;
         
-        // Update the education entry
+        // Update the education entry (keep is_primary as false)
         const result = await query(
             `UPDATE education 
              SET university_name = $1, 
                  field_of_study = $2, 
                  education_start_date = $3, 
                  education_end_date = $4, 
-                 degree = $5
-             WHERE id = $6 AND user_profile_id = $7
+                 degree = $5,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $6 AND user_profile_id = $7 AND (is_primary = false OR is_primary IS NULL)
              RETURNING *`,
             [universityName, fieldOfStudy, startDate, endDate, degree, educationId, id]
         );
@@ -840,11 +867,15 @@ exports.updateAdditionalEducation = async (req, res) => {
             return res.status(404).json({ error: 'Education entry not found' });
         }
         
-        console.log('✅ Education updated successfully');
+        console.log('Education updated successfully');
         
-        // Get all education to return
+        // Get all additional education to return (excluding primary)
         const allEducationUpdated = await query(
-            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree 
+             FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
         );
         
@@ -861,7 +892,7 @@ exports.updateAdditionalEducation = async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('❌ Error updating education:', error);
+        console.error('Error updating education:', error);
         res.status(500).json({ 
             error: 'Failed to update education',
             message: error.message 
@@ -875,16 +906,19 @@ exports.deleteAdditionalEducation = async (req, res) => {
         const { id, eduIndex } = req.params;
         const { query } = require('../conifg/database');
         
-        console.log('🗑️ Deleting education at index:', eduIndex);
+        console.log('Deleting education at index:', eduIndex);
         
-        // Get all education entries for this user
+        // Get all additional education entries for this user (excluding primary)
         const allEducation = await query(
-            'SELECT id FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
         );
         
         if (allEducation.rows.length === 0) {
-            return res.status(404).json({ error: 'No education entries found' });
+            return res.status(404).json({ error: 'No additional education entries found' });
         }
         
         const index = parseInt(eduIndex);
@@ -895,21 +929,27 @@ exports.deleteAdditionalEducation = async (req, res) => {
         // Get the actual education ID at this index
         const educationId = allEducation.rows[index].id;
         
-        // Delete the education entry
+        // Delete the education entry (only if it's not primary)
         const result = await query(
-            'DELETE FROM education WHERE id = $1 AND user_profile_id = $2 RETURNING *',
+            `DELETE FROM education 
+             WHERE id = $1 AND user_profile_id = $2 AND (is_primary = false OR is_primary IS NULL)
+             RETURNING *`,
             [educationId, id]
         );
         
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Education entry not found' });
+            return res.status(404).json({ error: 'Education entry not found or cannot delete primary education' });
         }
         
-        console.log('✅ Education deleted successfully');
+        console.log('Education deleted successfully');
         
-        // Get remaining education to return
+        // Get remaining additional education to return (excluding primary)
         const remainingEducation = await query(
-            'SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            `SELECT id, university_name, field_of_study, education_start_date, education_end_date, degree 
+             FROM education 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY education_start_date DESC`,
             [id]
         );
         
@@ -926,9 +966,318 @@ exports.deleteAdditionalEducation = async (req, res) => {
             }))
         });
     } catch (error) {
-        console.error('❌ Error deleting education:', error);
+        console.error('Error deleting education:', error);
         res.status(500).json({ 
             error: 'Failed to delete education',
+            message: error.message 
+        });
+    }
+};
+
+// Get projects data
+exports.getProjects = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { query } = require('../conifg/database');
+        
+        // Get primary project from user_profiles table
+        const profileResult = await query(
+            'SELECT project_title, project_summary FROM user_profiles WHERE id = $1',
+            [id]
+        );
+        
+        if (profileResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+        
+        // Get additional projects from projects table (excluding primary)
+        const projectsResult = await query(
+            `SELECT id, project_title, project_summary, created_at 
+             FROM projects 
+             WHERE user_profile_id = $1 
+             AND (is_primary = false OR is_primary IS NULL)
+             ORDER BY created_at DESC`,
+            [id]
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                primary: {
+                    projectTitle: profileResult.rows[0].project_title,
+                    projectSummary: profileResult.rows[0].project_summary
+                },
+                additional: projectsResult.rows.map(proj => ({
+                    id: proj.id,
+                    projectTitle: proj.project_title,
+                    projectSummary: proj.project_summary,
+                    createdAt: proj.created_at
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching projects:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch projects data',
+            message: error.message 
+        });
+    }
+};
+
+// Update primary project
+exports.updatePrimaryProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { projectTitle, projectSummary } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('📚 Updating primary project for profile:', id);
+        console.log('📤 Data:', { projectTitle, projectSummary });
+        
+        // Update in user_profiles table
+        const profileResult = await query(
+            `UPDATE user_profiles 
+             SET project_title = $1, 
+                 project_summary = $2, 
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3 
+             RETURNING *`,
+            [projectTitle, projectSummary, id]
+        );
+        
+        if (profileResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Profile not found' });
+        }
+        
+        // Also sync to projects table
+        // Check if a primary project already exists in projects table for this user
+        const existingPrimaryProject = await query(
+            `SELECT id FROM projects 
+             WHERE user_profile_id = $1 
+             AND is_primary = true 
+             LIMIT 1`,
+            [id]
+        );
+        
+        if (existingPrimaryProject.rows.length > 0) {
+            // Update existing primary project
+            await query(
+                `UPDATE projects 
+                 SET project_title = $1, 
+                     project_summary = $2,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $3 AND user_profile_id = $4`,
+                [projectTitle, projectSummary, existingPrimaryProject.rows[0].id, id]
+            );
+            console.log('Primary project updated in projects table');
+        } else {
+            // Insert new primary project
+            await query(
+                `INSERT INTO projects (
+                    user_profile_id, project_title, project_summary, is_primary
+                ) VALUES ($1, $2, $3, true)`,
+                [id, projectTitle, projectSummary]
+            );
+            console.log('Primary project inserted into projects table');
+        }
+        
+        console.log('Primary project updated successfully');
+        
+        res.json({ 
+            success: true,
+            message: 'Primary project updated successfully',
+            data: profileResult.rows[0]
+        });
+    } catch (error) {
+        console.error('❌ Error updating primary project:', error);
+        res.status(500).json({ 
+            error: 'Failed to update primary project',
+            message: error.message 
+        });
+    }
+};
+
+// Add additional project
+exports.addAdditionalProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { projectTitle, projectSummary } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('Adding additional project for profile:', id);
+        console.log('Data:', { projectTitle, projectSummary });
+        
+        // Validation
+        if (!projectTitle || !projectSummary) {
+            return res.status(400).json({ 
+                error: 'Missing required fields: projectTitle, projectSummary' 
+            });
+        }
+        
+        // Insert into projects table
+        const result = await query(
+            `INSERT INTO projects (
+                user_profile_id, project_title, project_summary
+            ) VALUES ($1, $2, $3)
+            RETURNING *`,
+            [id, projectTitle, projectSummary]
+        );
+        
+        console.log('Project added successfully');
+        
+        // Get all additional projects to return
+        const allProjects = await query(
+            'SELECT id, project_title, project_summary, created_at FROM projects WHERE user_profile_id = $1 ORDER BY created_at DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Project added successfully',
+            data: allProjects.rows.map(proj => ({
+                id: proj.id,
+                projectTitle: proj.project_title,
+                projectSummary: proj.project_summary,
+                createdAt: proj.created_at
+            }))
+        });
+    } catch (error) {
+        console.error('Error adding project:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({ 
+            error: 'Failed to add project',
+            message: error.message
+        });
+    }
+};
+
+// Update additional project by index
+exports.updateAdditionalProject = async (req, res) => {
+    try {
+        const { id, projIndex } = req.params;
+        const { projectTitle, projectSummary } = req.body;
+        const { query } = require('../conifg/database');
+        
+        console.log('📚 Updating project with index:', projIndex);
+        
+        // Get all projects for this user
+        const allProjects = await query(
+            'SELECT id FROM projects WHERE user_profile_id = $1 ORDER BY created_at DESC',
+            [id]
+        );
+        
+        if (allProjects.rows.length === 0) {
+            return res.status(404).json({ error: 'No projects found' });
+        }
+        
+        const index = parseInt(projIndex);
+        if (index < 0 || index >= allProjects.rows.length) {
+            return res.status(400).json({ error: 'Invalid project index' });
+        }
+        
+        // Get the actual project ID at this index
+        const projectId = allProjects.rows[index].id;
+        
+        // Update the project
+        const result = await query(
+            `UPDATE projects 
+             SET project_title = $1, 
+                 project_summary = $2,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3 AND user_profile_id = $4
+             RETURNING *`,
+            [projectTitle, projectSummary, projectId, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+        
+        console.log('Project updated successfully');
+        
+        // Get all projects to return
+        const allProjectsUpdated = await query(
+            'SELECT id, project_title, project_summary, created_at FROM projects WHERE user_profile_id = $1 ORDER BY created_at DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Project updated successfully',
+            data: allProjectsUpdated.rows.map(proj => ({
+                id: proj.id,
+                projectTitle: proj.project_title,
+                projectSummary: proj.project_summary,
+                createdAt: proj.created_at
+            }))
+        });
+    } catch (error) {
+        console.error('Error updating project:', error);
+        res.status(500).json({ 
+            error: 'Failed to update project',
+            message: error.message 
+        });
+    }
+};
+
+// Delete additional project by index
+exports.deleteAdditionalProject = async (req, res) => {
+    try {
+        const { id, projIndex } = req.params;
+        const { query } = require('../conifg/database');
+        
+        console.log('🗑️ Deleting project at index:', projIndex);
+        
+        // Get all projects for this user
+        const allProjects = await query(
+            'SELECT id FROM projects WHERE user_profile_id = $1 ORDER BY created_at DESC',
+            [id]
+        );
+        
+        if (allProjects.rows.length === 0) {
+            return res.status(404).json({ error: 'No projects found' });
+        }
+        
+        const index = parseInt(projIndex);
+        if (index < 0 || index >= allProjects.rows.length) {
+            return res.status(400).json({ error: 'Invalid project index' });
+        }
+        
+        // Get the actual project ID at this index
+        const projectId = allProjects.rows[index].id;
+        
+        // Delete the project
+        const result = await query(
+            'DELETE FROM projects WHERE id = $1 AND user_profile_id = $2 RETURNING *',
+            [projectId, id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+        
+        console.log('✅ Project deleted successfully');
+        
+        // Get remaining projects to return
+        const remainingProjects = await query(
+            'SELECT id, project_title, project_summary, created_at FROM projects WHERE user_profile_id = $1 ORDER BY created_at DESC',
+            [id]
+        );
+        
+        res.json({ 
+            success: true,
+            message: 'Project deleted successfully',
+            data: remainingProjects.rows.map(proj => ({
+                id: proj.id,
+                projectTitle: proj.project_title,
+                projectSummary: proj.project_summary,
+                createdAt: proj.created_at
+            }))
+        });
+    } catch (error) {
+        console.error('❌ Error deleting project:', error);
+        res.status(500).json({ 
+            error: 'Failed to delete project',
             message: error.message 
         });
     }

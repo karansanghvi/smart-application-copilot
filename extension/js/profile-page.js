@@ -29,6 +29,7 @@ let currentProfile = null;
 let currentProfileId = null;
 let editingExpIndex = null;
 let editingEducationIndex = null;
+let editingProjectIndex = null;
 let editingSkills = [];
 
 // Display User Profile Data
@@ -227,10 +228,15 @@ function displayUserProfile(profile) {
 
     displayWorkExperiences(profile);
     displayEducation(profile);
+    displayProjects(profile);
     displayAuthorizationInfo(profile);
     displayAdditionalInfo(profile);
     displayUploadedDocuments(profile);
 }
+
+// !!=======================================================================================================================
+//  !!EVENT LISTENERS
+// !!=======================================================================================================================
 
 // Edit Personal Info
 document.getElementById('editPersonalInfoBtn')?.addEventListener('click', () => {
@@ -357,6 +363,41 @@ document.getElementById('saveEditEducationModal')?.addEventListener('click', () 
     saveEditedEducation();
 });
 
+// Edit Primary Project 
+document.getElementById('editProjectBtn')?.addEventListener('click', () => {
+    enterEditMode('project');
+});
+
+document.getElementById('saveProjectBtn')?.addEventListener('click', () => {
+    savePrimaryProject();
+});
+
+document.getElementById('cancelProjectBtn')?.addEventListener('click', () => {
+    exitEditMode('project');
+});
+
+// Add New Project
+document.getElementById('addNewProjectBtn')?.addEventListener('click', () => {
+    openAddProjectModal();
+});
+
+document.getElementById('cancelNewProjectBtn')?.addEventListener('click', () => {
+    closeAddProjectModal();
+});
+
+document.getElementById('saveNewProjectBtn')?.addEventListener('click', () => {
+    addNewProject();
+});
+
+// Edit Project Modal
+document.getElementById('cancelEditProjectBtn')?.addEventListener('click', () => {
+    closeEditProjectModal();
+});
+
+document.getElementById('saveEditProjectBtn')?.addEventListener('click', () => {
+    saveEditedProject();
+});
+
 // Edit Skills & Expertise
 document.getElementById('editSkillsBtn')?.addEventListener('click', () => {
     enterEditMode('skills');
@@ -452,6 +493,10 @@ document.getElementById('saveAdditionalBtn')?.addEventListener('click', () => {
 document.getElementById('cancelAdditionalBtn')?.addEventListener('click', () => {
     exitEditMode('additional');
 });
+
+// !!=======================================================================================================================
+//  !!EDIT MODE
+// !!=======================================================================================================================
 
 // Enter Edit Mode
 function enterEditMode(section) {
@@ -552,6 +597,12 @@ function enterEditMode(section) {
         document.getElementById('editPrimaryEducationStartDate').value = currentProfile.educationStartDate || '';
         document.getElementById('editPrimaryEducationEndDate').value = currentProfile.educationEndDate || '';
         document.getElementById('editPrimaryDegree').value = currentProfile.degree || '';
+    } else if (section === 'project') {
+        document.getElementById('projectView').style.display = 'none';  
+        document.getElementById('projectEdit').style.display = 'block';
+        
+        document.getElementById('editProjectTitle').value = currentProfile.projectTitle || currentProfile.project_title || '';
+        document.getElementById('editProjectSummary').value = currentProfile.projectSummary || currentProfile.project_summary || '';
     }
 }
 
@@ -580,8 +631,15 @@ function exitEditMode(section) {
     } else if (section === 'primaryEducation') {
         document.getElementById('primaryEducationView').style.display = 'block';
         document.getElementById('primaryEducationEdit').style.display = 'none';
+    } else if (section === 'project') {
+        document.getElementById('projectView').style.display = 'block';
+        document.getElementById('projectEdit').style.display = 'none';
     }
 }
+
+// !!=======================================================================================================================
+//  !!PERSONAL INFORMATION
+// !!=======================================================================================================================
 
 // Edit and Update For Personal Information
 async function savePersonalInfo() {
@@ -651,6 +709,10 @@ function displayEducation(profile) {
     displayPrimaryEducation(profile);
     displayAdditionalEducation(profile);
 }
+
+// !!=======================================================================================================================
+//  !!EDUCATION
+// !!=======================================================================================================================
 
 // Display Primary Education
 function displayPrimaryEducation(profile) {
@@ -1033,6 +1095,7 @@ async function deleteAdditionalEducation(index) {
     }
 }
 
+// Add Education Modal
 function openAddEducationModal() {
     document.getElementById('newUniversityName').value = '';
     document.getElementById('newFieldOfStudy').value = '';
@@ -1042,15 +1105,18 @@ function openAddEducationModal() {
     document.getElementById('addEducationModal').style.display = 'block';
 }
 
+// Close Add Education Modal
 function closeAddEducationModal() {
     document.getElementById('addEducationModal').style.display = 'none';
 }
 
+// Close Edit Education Modal
 function closeEditEducationModal() {
     document.getElementById('editEducationModal').style.display = 'none';
     editingEducationIndex = null;
 }
 
+// Format Degree
 function formatDegree(value) {
     if (!value) return 'Not specified';
     
@@ -1069,6 +1135,10 @@ function formatDegree(value) {
     
     return degreeMap[value] || value;
 }
+
+// !!=======================================================================================================================
+//  !!WORK EXPERIENCE
+// !!=======================================================================================================================
 
 // Edit and Update For Work & Additional Experience
 async function saveWorkExp() {
@@ -1508,6 +1578,327 @@ function formatDateRange(startDate, endDate, currentlyWorking) {
     return `${startFormatted} - ${endFormatted}`;
 }
 
+// !!=======================================================================================================================
+//  !!PROJECTS
+// !!=======================================================================================================================
+// Display projects
+function displayProjects(profile) {
+    displayPrimaryProject(profile)
+    displayAdditionalProjects(profile)
+}
+
+// Display Primary Project
+function displayPrimaryProject(profile) {
+    const projectTitle = profile.projectTitle || profile.project_title;
+    const projectSummary = profile.projectSummary || profile.project_summary;
+
+    const projectTitleEl = document.getElementById('projectTitle');
+    if (projectTitleEl) {
+        projectTitleEl.textContent = projectTitle || '-';
+    }
+
+    const projectSummaryEl = document.getElementById('projectSummary');
+    if (projectSummaryEl) {
+        projectSummaryEl.textContent = projectSummary || '-';
+    }
+}
+
+// Display Additional Projects
+function displayAdditionalProjects(profile) {
+    const sectionEl = document.getElementById('additionalProjectSection');
+    const containerEl = document.getElementById('additionalProjectContainer');
+
+    if (!containerEl) return;
+
+    const projectsArray = profile.projects || profile.additionalProject || [];
+
+    if (projectsArray.length === 0) {
+        sectionEl.style.display = 'none';
+        containerEl.innerHTML = '<p style="color: rgba(255,255,255,0.5); text-align: center; padding: 2rem;">No additional projects added yet</p>';
+        return;
+    }
+    
+    sectionEl.style.display = 'block';
+    containerEl.innerHTML = '';
+
+    projectsArray.forEach((project, index) => {
+        const projectTitle = project.projectTitle || project.project_title || 'Not specified';
+        const projectSummary = project.projectSummary || project.project_summary || 'No summary provided';
+        
+        const projectHTML = `
+            <div class="project-item" data-index="${index}" style="position: relative; padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div class="project-badge" style="display: inline-block; background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        Project ${index + 1}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button type="button" class="edit-project-btn" data-index="${index}" title="Edit" style="background: rgba(102, 126, 234, 0.2); color: #667eea; border: 1px solid rgba(102, 126, 234, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Edit
+                        </button>
+                        <button type="button" class="delete-project-btn" data-index="${index}" title="Delete" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem;">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">Project Title</label>
+                    <div class="data-box">
+                        <span class="dataText" style="color: white;">${projectTitle}</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="color: white;">Project Summary</label>
+                    <div class="data-box" style="min-height: 100px;">
+                        <span class="dataText" style="color: white; white-space: pre-wrap;">${projectSummary}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        containerEl.innerHTML += projectHTML;
+    });
+
+    document.querySelectorAll('.edit-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            editAdditionalProject(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-project-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.getAttribute('data-index'));
+            deleteAdditionalProject(index);
+        });
+    });
+}
+
+// Save Primary Project 
+async function savePrimaryProject() {
+    console.log('Saving primary project...');
+
+    if (!currentProfileId) {
+        alert('Error: Profile Id not found');
+        return;
+    }
+
+    const updatedData = {
+        projectTitle: document.getElementById('editProjectTitle').value.trim(),
+        projectSummary: document.getElementById('editProjectSummary').value.trim()
+    };
+
+    if (!updatedData.projectTitle || !updatedData.projectSummary) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    console.log('Sending data: ', updatedData);
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/projects/primary`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+
+        console.log('Response status: ', response.status);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error response:', errorData);
+            throw new Error(errorData.error || 'Failed to update project');
+        }
+
+        const result = await response.json();
+        console.log('Update successful:', result);
+
+        currentProfile = {
+            ...currentProfile,
+            projectTitle: updatedData.projectTitle,
+            projectSummary: updatedData.projectSummary
+        };
+        
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            console.log('Updated local storage');
+            displayProjects(currentProfile);
+            exitEditMode('project');
+            alert('Primary project updated successfully!');
+        });
+    } catch (error) {
+        console.error('Error updating primary project:', error);
+        alert(`Failed to update primary project: ${error.message}`);
+    }
+}
+
+// Add New Project 
+async function addNewProject() {
+    const projectTitle = document.getElementById('newProjectTitle').value.trim();
+    const projectSummary = document.getElementById('newProjectSummary').value.trim();
+
+    if (!projectTitle || !projectSummary) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const newProject = {
+        projectTitle,
+        projectSummary
+    };
+
+    console.log('Adding new project:', newProject);
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/projects/additional`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newProject)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to add new project');
+        }
+
+        const result = await response.json();
+        console.log('Project added successfully:', result);
+
+        if (!currentProfile.projects) {
+            currentProfile.projects = [];
+        }
+        currentProfile.projects = result.data;
+
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayProjects(currentProfile);
+            closeAddProjectModal();
+            alert('Project added successfully!');
+        });
+    } catch (error) {
+        console.error('Error adding project:', error);
+        alert(`Failed to add new project: ${error.message}`);
+    }
+}
+
+// Edit Additional Project 
+function editAdditionalProject(index) {
+    editingProjectIndex = index;
+    const project = currentProfile.projects[index];
+
+    const projectTitle = project.projectTitle || project.project_title || '';
+    const projectSummary = project.projectSummary || project.project_summary || '';
+
+    document.getElementById('editProjectTitle').value = projectTitle;
+    document.getElementById('editProjectSummary').value = projectSummary;
+
+    document.getElementById('editProjectModal').style.display = 'block';
+}
+
+// Save Edited Project 
+async function saveEditedProject() {
+    if (editingProjectIndex === null) return;
+
+    const projectTitle = document.getElementById('editProjectTitle').value.trim();
+    const projectSummary = document.getElementById('editProjectSummary').value.trim();
+
+    if (!projectTitle || !projectSummary) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    const updatedProject = {
+        projectTitle,
+        projectSummary
+    };
+
+    console.log('Updating project: ', updatedProject);
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/projects/additional/${editingProjectIndex}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedProject)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to update project');
+        }
+
+        const result = await response.json();
+        console.log('Profile updated successfully:', result);
+
+        currentProfile.projects = result.data;
+
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayProjects(currentProfile);
+            closeEditProjectModal();
+            editingProjectIndex = null;
+            alert('✅ Project updated successfully!');
+        });
+    } catch (error) {
+        console.error('Error updating project:', error);
+        alert(`Failed to update project: ${error.message}`);
+    }
+}
+
+// Delete Additional Project 
+async function deleteAdditionalProject(index) {
+    console.log('Deleting project at index:', index);
+
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}/projects/additional/${index}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to delete project');
+        }
+
+        const result = await response.json();
+        console.log('Project deleted successfully:', result);
+
+        currentProfile.projects = result.data;
+
+        chrome.storage.local.set({ userProfile: currentProfile }, () => {
+            displayProjects(currentProfile);
+            alert('Project deleted successfully!');
+        });
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        alert(`Failed to delete project: ${error.message}`);
+    }
+}
+
+// Open Add Project Modal 
+function openAddProjectModal() {
+    document.getElementById('newProjectTitle').value = '';
+    document.getElementById('newProjectSummary').value = '';
+    document.getElementById('addProjectModal').style.display = 'block';
+}
+
+// Close Add Project Modal
+function closeAddProjectModal() {
+    document.getElementById('addProjectModal').style.display = 'none';
+}
+
+// Close Edit Project Modal
+function closeEditProjectModal() {
+    document.getElementById('editProjectModal').style.display = 'none';
+    editingProjectIndex = null;
+}
+
+// !!=======================================================================================================================
+//  !!SKILLS & EXPERTISE
+// !!=======================================================================================================================
+
 // Edit and Update For Skills & Expertise
 function addSkillToEdit() {
     const input = document.getElementById('editSkillInput');
@@ -1613,6 +2004,10 @@ async function saveSkills() {
     }
 }
 
+// !!=======================================================================================================================
+//  !!JOB PREFERENCES
+// !!=======================================================================================================================
+
 // Edit and Update For Job Preferences
 async function saveJobPref() {
     console.log('💾 Saving job preferences...');
@@ -1667,6 +2062,10 @@ async function saveJobPref() {
         alert(`❌ Failed to update job preferences: ${error.message}`);
     }
 }
+
+// !!=======================================================================================================================
+//  !!ABROAD AUTHORIZATION
+// !!=======================================================================================================================
 
 // Save Abroad Authorization
 async function saveAuth() {
@@ -1724,6 +2123,40 @@ async function saveAuth() {
     }
 }
 
+// Display Authorization Information
+function displayAuthorizationInfo(profile) {
+    // Work Authorization - Select Radio Button
+    const authorizedValue = profile.authorized;
+    if (authorizedValue) {
+        const authorizedRadio = document.querySelector(`input[name="authorized"][value="${authorizedValue}"]`);
+        if (authorizedRadio) {
+            authorizedRadio.checked = true;
+        }
+    }
+
+    // Visa Sponsorship - Select Radio Button
+    const sponsorshipValue = profile.sponsorship;
+    if (sponsorshipValue) {
+        const sponsorshipRadio = document.querySelector(`input[name="sponsorship"][value="${sponsorshipValue}"]`);
+        if (sponsorshipRadio) {
+            sponsorshipRadio.checked = true;
+        }
+    }
+
+    // Visa Type
+    const visaTypeEl = document.getElementById('visaType');
+    if (profile.visaSponsorship && profile.visaSponsorship.trim()) {
+        visaTypeEl.textContent = profile.visaSponsorship;
+    } else {
+        visaTypeEl.textContent = 'Not applicable';
+        visaTypeEl.style.color = '#999';
+    }
+}
+
+// !!=======================================================================================================================
+//  !!UPLOAD DOCUMENTS
+// !!=======================================================================================================================
+
 // Upload Document (Resume or Cover Letter)
 async function uploadDocument(file, type) {
     console.log(`📤 Uploading ${type}...`, file);
@@ -1773,74 +2206,6 @@ async function uploadDocument(file, type) {
     } catch (error) {
         console.error(`❌ Error uploading ${type}:`, error);
         alert(`❌ Failed to upload ${type === 'resume' ? 'resume' : 'cover letter'}: ${error.message}`);
-    }
-}
-
-// Display Authorization Information
-function displayAuthorizationInfo(profile) {
-    // Work Authorization - Select Radio Button
-    const authorizedValue = profile.authorized;
-    if (authorizedValue) {
-        const authorizedRadio = document.querySelector(`input[name="authorized"][value="${authorizedValue}"]`);
-        if (authorizedRadio) {
-            authorizedRadio.checked = true;
-        }
-    }
-
-    // Visa Sponsorship - Select Radio Button
-    const sponsorshipValue = profile.sponsorship;
-    if (sponsorshipValue) {
-        const sponsorshipRadio = document.querySelector(`input[name="sponsorship"][value="${sponsorshipValue}"]`);
-        if (sponsorshipRadio) {
-            sponsorshipRadio.checked = true;
-        }
-    }
-
-    // Visa Type
-    const visaTypeEl = document.getElementById('visaType');
-    if (profile.visaSponsorship && profile.visaSponsorship.trim()) {
-        visaTypeEl.textContent = profile.visaSponsorship;
-    } else {
-        visaTypeEl.textContent = 'Not applicable';
-        visaTypeEl.style.color = '#999';
-    }
-}
-
-// Display Additional Information
-function displayAdditionalInfo(profile) {
-    // Gender
-    const genderEl = document.getElementById('genderInfo');
-    genderEl.textContent = formatGender(profile.gender);
-    if (profile.gender === 'otherGender') {
-        genderEl.className = 'declined';
-    }
-
-    // Hispanic/Latino
-    const hispanicEl = document.getElementById('hispanicLatinoInfo');
-    hispanicEl.textContent = formatHispanicLatino(profile.hispanicLatino);
-    if (profile.hispanicLatino === 'otherHisLat') {
-        hispanicEl.className = 'declined';
-    }
-
-    // Race
-    const raceEl = document.getElementById('raceInfo');
-    raceEl.textContent = formatRace(profile.race);
-    if (profile.race === 'otherRace') {
-        raceEl.className = 'declined';
-    }
-
-    // Veteran Status
-    const veteranEl = document.getElementById('veteranInfo');
-    veteranEl.textContent = formatVeteranStatus(profile.veteran);
-    if (profile.veteran === 'otherVeteran') {
-        veteranEl.className = 'declined';
-    }
-
-    // Disability Status
-    const disabilityEl = document.getElementById('disabilityInfo');
-    disabilityEl.textContent = formatDisabilityStatus(profile.disability);
-    if (profile.disability === 'otherDisability') {
-        disabilityEl.className = 'declined';
     }
 }
 
@@ -2053,6 +2418,48 @@ function formatFileSize(bytes) {
     const size = (bytes / Math.pow(1024, i)).toFixed(2);
     
     return `${size} ${sizes[i]}`;
+}
+
+// !!=======================================================================================================================
+//  !!ADDITIONAL QUESTIONS
+// !!=======================================================================================================================
+
+// Display Additional Information
+function displayAdditionalInfo(profile) {
+    // Gender
+    const genderEl = document.getElementById('genderInfo');
+    genderEl.textContent = formatGender(profile.gender);
+    if (profile.gender === 'otherGender') {
+        genderEl.className = 'declined';
+    }
+
+    // Hispanic/Latino
+    const hispanicEl = document.getElementById('hispanicLatinoInfo');
+    hispanicEl.textContent = formatHispanicLatino(profile.hispanicLatino);
+    if (profile.hispanicLatino === 'otherHisLat') {
+        hispanicEl.className = 'declined';
+    }
+
+    // Race
+    const raceEl = document.getElementById('raceInfo');
+    raceEl.textContent = formatRace(profile.race);
+    if (profile.race === 'otherRace') {
+        raceEl.className = 'declined';
+    }
+
+    // Veteran Status
+    const veteranEl = document.getElementById('veteranInfo');
+    veteranEl.textContent = formatVeteranStatus(profile.veteran);
+    if (profile.veteran === 'otherVeteran') {
+        veteranEl.className = 'declined';
+    }
+
+    // Disability Status
+    const disabilityEl = document.getElementById('disabilityInfo');
+    disabilityEl.textContent = formatDisabilityStatus(profile.disability);
+    if (profile.disability === 'otherDisability') {
+        disabilityEl.className = 'declined';
+    }
 }
 
 // Save Additional Questions
