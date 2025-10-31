@@ -194,6 +194,18 @@ function displayUserProfile(profile) {
         }
     }
 
+    // Job Preferences - Relocate Display
+    const relocateEl = document.getElementById('relocate');
+    if (relocateEl) {
+        relocateEl.textContent = profile.relocate === 'yes' ? 'Yes' : (profile.relocate === 'no' ? 'No' : 'Not specified');
+    }
+
+    // Job Preferences - Restrictive Bond Display
+    const restrictiveBondEl = document.getElementById('restrictiveBond');
+    if (restrictiveBondEl) {
+        restrictiveBondEl.textContent = profile.restrictiveBond === 'yes' ? 'Yes' : (profile.restrictiveBond === 'no' ? 'No' : 'Not specified');
+    }
+
     // Abroad Authorization Display
     const authorizedDisplay = document.getElementById('authorizedDisplay');
     if (authorizedDisplay) {
@@ -556,6 +568,20 @@ function enterEditMode(section) {
             }
         }
         
+        if (currentProfile.relocate) {
+            const radioBtn = document.getElementById(`editRelocate-${currentProfile.relocate}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+
+         if (currentProfile.restrictiveBond) {
+            const radioBtn = document.getElementById(`editRestrictiveBond-${currentProfile.restrictiveBond}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+        
         document.getElementById('editSalary').value = currentProfile.expectedSalary || '';
         document.getElementById('editPreferredLocations').value = currentProfile.preferredLocations || '';
     } else if (section === 'auth') {
@@ -622,6 +648,30 @@ function exitEditMode(section) {
     } else if (section === 'jobPref') {
         document.getElementById('jobPrefView').style.display = 'block';
         document.getElementById('jobPrefEdit').style.display = 'none';
+         if (currentProfile.workType) {
+            const radioBtn = document.getElementById(`editWorkType-${currentProfile.workType}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+    
+        if (currentProfile.relocate) {
+            const radioBtn = document.getElementById(`editRelocate-${currentProfile.relocate}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+
+        if (currentProfile.restrictiveBond) {
+            const radioBtn = document.getElementById(`editRestrictiveBond-${currentProfile.restrictiveBond}`);
+            if (radioBtn) {
+                radioBtn.checked = true;
+            }
+        }
+    
+        document.getElementById('editSalary').value = currentProfile.expectedSalary || '';
+        document.getElementById('editPreferredLocations').value = currentProfile.preferredLocations || '';
+
     } else if (section === 'auth') {
         document.getElementById('authView').style.display = 'block';
         document.getElementById('authEdit').style.display = 'none';
@@ -2010,7 +2060,7 @@ async function saveSkills() {
 
 // Edit and Update For Job Preferences
 async function saveJobPref() {
-    console.log('💾 Saving job preferences...');
+    console.log('Saving job preferences...');
     
     if (!currentProfileId) {
         alert('Error: Profile ID not found');
@@ -2018,15 +2068,19 @@ async function saveJobPref() {
     }
     
     const selectedWorkType = document.querySelector('input[name="editWorkType"]:checked');
+    const selectedRelocate = document.querySelector('input[name="editRelocate"]:checked');
+    const selectedRestrictiveBond = document.querySelector('input[name="editRestrictiveBond"]:checked'); // ADD THIS
     
     const updatedData = {
         ...currentProfile,
         workType: selectedWorkType ? selectedWorkType.value : null,
+        relocate: selectedRelocate ? selectedRelocate.value : null,
+        restrictiveBond: selectedRestrictiveBond ? selectedRestrictiveBond.value : null, // ADD THIS
         expectedSalary: document.getElementById('editSalary').value.trim(),
         preferredLocations: document.getElementById('editPreferredLocations').value.trim()
     };
     
-    console.log('📤 Sending data:', updatedData);
+    console.log('Sending data:', updatedData);
     
     try {
         const response = await fetch(`http://localhost:3000/api/profiles/${currentProfileId}`, {
@@ -2037,29 +2091,29 @@ async function saveJobPref() {
             body: JSON.stringify(updatedData)
         });
         
-        console.log('📡 Response status:', response.status);
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('❌ Error response:', errorData);
+            console.error('Error response:', errorData);
             throw new Error(errorData.error || 'Failed to update profile');
         }
         
         const result = await response.json();
-        console.log('✅ Update successful:', result);
+        console.log('Update successful:', result);
         
         chrome.storage.local.set({ userProfile: updatedData }, () => {
-            console.log('💾 Updated local storage');
+            console.log('Updated local storage');
             
             currentProfile = updatedData;
             displayUserProfile(updatedData);
             exitEditMode('jobPref');
-            alert('✅ Job Preferences updated successfully!');
+            alert('Job Preferences updated successfully!');
         });
         
     } catch (error) {
-        console.error('❌ Error updating job preferences:', error);
-        alert(`❌ Failed to update job preferences: ${error.message}`);
+        console.error('Error updating job preferences:', error);
+        alert(`Failed to update job preferences: ${error.message}`);
     }
 }
 
