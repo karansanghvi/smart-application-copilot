@@ -4,40 +4,68 @@ import numpy as np
 
 # Use natural phrases instead of keyword lists
 PROFILE_FIELD_DESCRIPTIONS = {
-    'first_name': 'first name',
-    'middle_name': 'middle name',
-    'last_name': 'last name or surname',
-    'email': 'email address',
-    'phone': 'phone number or mobile number',  # ← More natural!
-    'address_line_1': 'street address',
-    'address_line_2': 'apartment or suite number',
-    'city': 'city or town',
-    'state': 'state or province',
-    'country': 'country',
-    'job_title': 'job title or position',
-    'company_name': 'company name or employer',
-    'start_date': 'start date',
-    'end_date': 'end date',
-    'currently_working': 'currently working',
-    'professional_summary': 'professional summary or bio',
-    'linkedin_url': 'linkedin profile',
-    'github_url': 'github profile',
-    'website_url': 'personal website',
-    'work_type': 'work type',
-    'expected_salary': 'expected salary',
-    'preferred_locations': 'preferred locations',
-    'work_authorized': 'work authorization',
-    'visa_sponsorship_required': 'visa sponsorship required',
-    'visa_sponsorship_type': 'visa type',
-    'resume_filename': 'resume or cv',
-    'resume_path': 'resume path',
-    'cover_letter_filename': 'cover letter',
-    'cover_letter_path': 'cover letter path',
-    'gender': 'gender',
-    'hispanic_latino': 'hispanic or latino',
-    'race': 'race',
-    'veteran_status': 'veteran status',
-    'disability_status': 'disability status'
+    # Personal Information
+    'first_name': 'first name or given name or forename or what is your first name',
+    'middle_name': 'middle name or middle initial or what is your middle name',
+    'last_name': 'last name or surname or family name or what is your last name',
+    'email': 'email address or email or contact email or work email or personal email',
+    'phone': 'phone number or mobile number or contact number or telephone number or cell phone or primary phone',  
+    'address_line_1': 'street address or address line 1 or home address or residential address or mailing address',
+    'address_line_2': 'apartment number or suite number or unit number or address line 2 or apt or building number',
+    'zipcode': 'zip code or postal code or zip or postcode or area code',
+    'city': 'city or town or municipality or what city do you live in',
+    'state': 'state or province or region or territory or what state do you live in',
+    'country': 'country or nation or country of residence or what country do you live in',
+    
+    # Education
+    'university_name': 'university name or college name or school name or educational institution or name of university or name of college or where did you study or institution name',
+    'field_of_study': 'field of study or major or degree program or area of study or specialization or concentration or what did you study or academic major or course of study',
+    'education_start_date': 'education start date or enrollment date or start date or when did you start or date started or beginning date or commenced education',
+    'education_end_date': 'graduation date or when did you graduate or when you graduated or education end date or completion date or finish date or end date or date graduated or expected graduation or graduation year',
+    'degree': 'degree type or qualification or education level or degree or highest education or academic degree or degree earned or level of education or educational qualification',
+    
+    # Work Experience 
+    'job_title': 'job title or position or role or current position or job role or position title or current title or what is your title or designation',
+    'company_name': 'company name or employer or organization or employer name or current employer or company or workplace or where do you work or organization name',
+    'start_date': 'start date or from date or employment start date or when did you start or date started or beginning date or commenced work',
+    'end_date': 'end date or to date or employment end date or when did you leave or date ended or finish date or left company',
+    'currently_working': 'currently working or present or current position or still working here or working here now or currently employed',
+    'professional_summary': 'professional summary or bio or about you or professional bio or career summary or summary or professional profile or tell us about yourself or describe yourself',
+    
+    # Projects 
+    'project_title': 'project title or project name or name of project or title or what is the project called',
+    'project_summary': 'project description or project details or project summary or describe the project or tell us about the project or what did you do or project overview or description',
+    
+    # Skills & Expertise
+    'skills': 'skills or technical skills or core competencies or soft skills or professional skills or what are your skills or list your skills or key skills or relevant skills or areas of expertise',
+    'linkedin_url': 'linkedin profile or linkedin url or linkedin or linkedin link or linkedin address or your linkedin',
+    'github_url': 'github profile or github url or github or github username or github link or github account',
+    'website_url': 'personal website or website url or portfolio url or website or portfolio or your website or personal site',
+    
+    # Job Preferences
+    'work_type': 'work type or employment type or job type or type of employment or full time or part time or contract or preferred work type or work arrangement',
+    'expected_salary': 'expected salary or salary expectations or desired salary or salary requirement or compensation expectations or what is your expected salary',
+    'preferred_locations': 'preferred locations or preferred work location or where would you like to work or location preference or desired location',
+    'work_relocate': 'willing to relocate or open to relocation or can you relocate or relocation or are you willing to move or relocation availability',
+    'restrictive_bond': 'restrictive bond or service agreement or employment bond or notice period or non compete or contractual obligations',
+    
+    # Work Authorization
+    'work_authorized': 'work authorization or authorized to work or legally authorized or can you legally work or work permit or right to work or employment authorization or are you authorized',
+    'visa_sponsorship_required': 'visa sponsorship required or need visa sponsorship or require sponsorship or do you need sponsorship or sponsorship needed or will you require sponsorship',
+    'visa_sponsorship_type': 'visa type or visa category or type of visa or what type of visa or visa status or immigration status or current visa',
+    
+    # Documents
+    'resume_filename': 'resume or cv or curriculum vitae or upload resume or attach resume or your resume',
+    'resume_path': 'resume path or resume file or resume location or cv file',
+    'cover_letter_filename': 'cover letter or upload cover letter or attach cover letter or letter of interest',
+    'cover_letter_path': 'cover letter path or cover letter file or cover letter location',
+    
+    # Demographic Information (EEO)
+    'gender': 'gender or gender identity or what is your gender or sex or gender identification',
+    'hispanic_latino': 'hispanic or latino or are you hispanic or latino or hispanic latino ethnicity or ethnicity',
+    'race': 'race or racial identity or ethnicity or what is your race or racial background or ethnic background',
+    'veteran_status': 'veteran status or are you a veteran or military veteran or protected veteran or veteran',
+    'disability_status': 'disability status or do you have a disability or disability or physical disability or protected disability status'
 }
 
 def find_best_match(model, form_field_label):

@@ -25,7 +25,7 @@ const getFieldValue = (fieldName, profile) => {
         'city': profile.city,
         'state': profile.state,
         'country': profile.country,
-        'zip_code': profile.zip_code,
+        'zipcode': profile.zipcode,
         
         // Education (Primary/Current)
         'university_name': profile.university_name,
