@@ -172,24 +172,38 @@ const getMultipleFieldValues = async (req, res) => {
                 const response = await axios.post(`${AI_SERVICE_URL}/match`, {
                     formFieldLabel: label
                 }, {
-                    timeout: 10000,
+                    timeout: 30000,
                     headers: {
                         'Content-Type': 'application/json'
                     }
                 });
 
-                const matchedField = response.data.matched_field;
-                const confidence = response.data.confidence;
+                console.log(`🔍 AI Response for "${label}":`, response.data);
+
+                const matchedField = response.data.matched_field;  
+                const confidence = response.data.confidence;       
+
+                // IMPORTANT: Check if match was successful
+                if (!matchedField || response.data.status !== 'success') {
+                    return {
+                        formFieldLabel: label,
+                        matched_field: null,
+                        value: null,
+                        confidence: confidence || 0,
+                        has_value: false,
+                        status: 'no_match'
+                    };
+                }
 
                 // Get value from profile if match found 
-                const value = matchedField ? extractFieldValue(matchedField, profile) : null;
+                const value = extractFieldValue(matchedField, profile);
 
                 return {
                     formFieldLabel: label,
                     matched_field: matchedField,
                     value: value,
                     confidence: confidence,
-                    has_value: value !== null,
+                    has_value: value !== null && value !== undefined && value !== '',
                     status: 'success'
                 };
             } catch (error) {

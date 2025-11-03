@@ -282,7 +282,13 @@ async function autofillTabForm(tabId, buttonElement) {
             })
         });
 
+        console.log('🔍 RAW RESPONSE STATUS:', response.status);
+        console.log('🔍 RAW RESPONSE OK:', response.ok);
+
         const matchData = await response.json();
+
+        console.log('🔍 FULL API RESPONSE:', JSON.stringify(matchData, null, 2));
+
         const apiDuration = Date.now() - apiStartTime;
         
         console.log(`✅ API Response received in ${apiDuration}ms`);
