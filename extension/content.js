@@ -84,7 +84,7 @@ const DROPDOWN_MAPPINGS = {
       'no_disability',
       'not_disabled'
     ],
-    'hasDisability': [
+    'yesDisability': [
       'Yes, I have a disability',
       'Yes, I have a disability (or previously had a disability)',
       'I have a disability',

@@ -18,24 +18,45 @@ PROFILE_FIELD_DESCRIPTIONS = {
     'state': 'state or province or region or territory or what state do you live in',
     'country': 'country or nation or country of residence or what country do you live in',
     
-    # Education
-    'university_name': 'university name or college name or school name or educational institution or name of university or name of college or where did you study or institution name',
+    # Primary Education
+    'university_name': 'university name or college name or school name or educational institution or name of university or name of college or where did you study or institution name or first university or primary education',
     'field_of_study': 'field of study or major or degree program or area of study or specialization or concentration or what did you study or academic major or course of study',
     'education_start_date': 'education start date or enrollment date or start date or when did you start or date started or beginning date or commenced education',
     'education_end_date': 'graduation date or when did you graduate or when you graduated or education end date or completion date or finish date or end date or date graduated or expected graduation or graduation year',
     'degree': 'degree type or qualification or education level or degree or highest education or academic degree or degree earned or level of education or educational qualification',
     
-    # Work Experience 
-    'job_title': 'job title or position or role or current position or job role or position title or current title or what is your title or designation',
-    'company_name': 'company name or employer or organization or employer name or current employer or company or workplace or where do you work or organization name',
+    # Additional Education (for subsequent education entries)
+    'education_0': 'second university or second college or second school or additional education or other education or another degree or previous education or prior university or earlier education or another university or previous college or other school or second degree',
+    'education_1': 'third university or third college or third school or additional education or other education or another degree or third degree or another previous education',
+    'education_2': 'fourth university or fourth college or fourth school or additional education or another degree or fourth degree',
+    'education_3': 'fifth university or fifth college or fifth school or additional education or another degree',
+    'education_4': 'sixth university or sixth college or additional education',
+    
+    # Primary Work Experience 
+    'job_title': 'job title or position or role or current position or job role or position title or current title or what is your title or designation or first job or primary job or most recent job',
+    'company_name': 'company name or employer or organization or employer name or current employer or company or workplace or where do you work or organization name or first company or primary employer',
     'start_date': 'start date or from date or employment start date or when did you start or date started or beginning date or commenced work',
     'end_date': 'end date or to date or employment end date or when did you leave or date ended or finish date or left company',
     'currently_working': 'currently working or present or current position or still working here or working here now or currently employed',
-    'professional_summary': 'professional summary or bio or about you or professional bio or career summary or summary or professional profile or tell us about yourself or describe yourself',
+    'professional_summary': 'professional summary or bio or about you or professional bio or career summary or summary or professional profile or tell us about yourself or describe yourself or job description',
     
-    # Projects 
-    'project_title': 'project title or project name or name of project or title or what is the project called',
+    # Additional Work Experiences (for subsequent work entries)
+    'work_experience_0': 'second job or previous job or additional work experience or other work experience or previous employer or past job or former position or prior job or earlier job or another job or second position or previous company or former employer or second employer or past position',
+    'work_experience_1': 'third job or additional work experience or other work experience or another previous job or third position or third employer or third company',
+    'work_experience_2': 'fourth job or additional work experience or another past job or fourth position or fourth employer',
+    'work_experience_3': 'fifth job or additional work experience or fifth position',
+    'work_experience_4': 'sixth job or additional work experience or sixth position',
+    
+    # Primary Project
+    'project_title': 'project title or project name or name of project or title or what is the project called or first project or primary project or main project or most recent project',
     'project_summary': 'project description or project details or project summary or describe the project or tell us about the project or what did you do or project overview or description',
+    
+    # Additional Projects (for subsequent project entries)
+    'project_0': 'second project or additional project or other project or another project you worked on or previous project or prior project or another project or second project title or other project name',
+    'project_1': 'third project or additional project or another project or third project title',
+    'project_2': 'fourth project or additional project or fourth project title',
+    'project_3': 'fifth project or additional project',
+    'project_4': 'sixth project or additional project',
     
     # Skills & Expertise
     'skills': 'skills or technical skills or core competencies or soft skills or professional skills or what are your skills or list your skills or key skills or relevant skills or areas of expertise',

@@ -6,12 +6,58 @@
 
 /**
  * Extract value from profile object based on matched field name
+ * Now handles additional education, work experiences, and projects
  */
-const getFieldValue = (fieldName, profile) => {
+const getFieldValue = (fieldName, profile, index = 0) => {
     if (!profile || !fieldName) {
         return null;
     }
 
+    // Check if this is requesting additional data (e.g., 'education_1', 'work_experience_2')
+    const match = fieldName.match(/^(education|work_experience|project)_(\d+)$/);
+    
+    if (match) {
+        const [, type, idx] = match;
+        const arrayIndex = parseInt(idx);
+        
+        // Handle additional education
+        if (type === 'education' && profile.education && profile.education[arrayIndex]) {
+            const edu = profile.education[arrayIndex];
+            return {
+                university_name: edu.university_name,
+                field_of_study: edu.field_of_study,
+                education_start_date: edu.education_start_date,
+                education_end_date: edu.education_end_date,
+                degree: edu.degree
+            };
+        }
+        
+        // Handle additional work experiences
+        if (type === 'work_experience' && profile.work_experiences && profile.work_experiences[arrayIndex]) {
+            const exp = profile.work_experiences[arrayIndex];
+            return {
+                job_title: exp.job_title,
+                company_name: exp.company_name,
+                start_date: exp.start_date,
+                end_date: exp.end_date,
+                currently_working: exp.currently_working ? 'Yes' : 'No',
+                job_description: exp.job_description
+            };
+        }
+        
+        // Handle additional projects
+        if (type === 'project' && profile.projects && profile.projects[arrayIndex]) {
+            const proj = profile.projects[arrayIndex];
+            return {
+                project_title: proj.project_title,
+                project_summary: proj.project_summary
+            };
+        }
+        
+        return null;
+    }
+
+    // Original field mapping for primary data
     const fieldMap = {
         // Personal Information
         'first_name': profile.first_name,
@@ -58,7 +104,7 @@ const getFieldValue = (fieldName, profile) => {
         'preferred_locations': profile.preferred_locations,
         'work_relocate': profile.work_relocate ? 'Yes' : 'No',
         'work_authorized': profile.work_authorized ? 'Yes' : 'No',
-        'visa_sponsorship_required': profile.visa_sponsorship_required ? 'Yes' : 'No',
+        'visa_sponsorship_required': profile.visa_spons_required ? 'Yes' : 'No',
         'visa_sponsorship_type': profile.visa_sponsorship_type,
         'restrictive_bond': profile.restrictive_bond ? 'Yes' : 'No',
         
@@ -81,6 +127,73 @@ const getFieldValue = (fieldName, profile) => {
     return value !== undefined && value !== null && value !== '' ? value : null;
 };
 
+/**
+ * Get all available data including additional entries
+ * This creates a flattened map of all available fields
+ */
+const getAllAvailableFields = (profile) => {
+    const fields = {};
+    
+    // Add all primary fields
+    const primaryFields = [
+        'first_name', 'middle_name', 'last_name', 'email', 'phone',
+        'address_line_1', 'address_line_2', 'city', 'state', 'country', 'zipcode',
+        'university_name', 'field_of_study', 'education_start_date', 'education_end_date', 'degree',
+        'job_title', 'company_name', 'start_date', 'end_date', 'currently_working', 'professional_summary',
+        'project_title', 'project_summary',
+        'linkedin_url', 'github_url', 'website_url',
+        'work_type', 'expected_salary', 'preferred_locations',
+        'work_relocate', 'work_authorized', 'visa_sponsorship_required', 'visa_sponsorship_type', 'restrictive_bond',
+        'gender', 'hispanic_latino', 'race', 'veteran_status', 'disability_status'
+    ];
+    
+    primaryFields.forEach(field => {
+        const value = getFieldValue(field, profile);
+        if (value !== null) {
+            fields[field] = value;
+        }
+    });
+    
+    // Add additional education
+    if (profile.education && profile.education.length > 0) {
+        profile.education.forEach((edu, index) => {
+            fields[`education_${index}`] = {
+                university_name: edu.university_name,
+                field_of_study: edu.field_of_study,
+                education_start_date: edu.education_start_date,
+                education_end_date: edu.education_end_date,
+                degree: edu.degree
+            };
+        });
+    }
+    
+    // Add additional work experiences
+    if (profile.work_experiences && profile.work_experiences.length > 0) {
+        profile.work_experiences.forEach((exp, index) => {
+            fields[`work_experience_${index}`] = {
+                job_title: exp.job_title,
+                company_name: exp.company_name,
+                start_date: exp.start_date,
+                end_date: exp.end_date,
+                currently_working: exp.currently_working ? 'Yes' : 'No',
+                job_description: exp.job_description
+            };
+        });
+    }
+    
+    // Add additional projects
+    if (profile.projects && profile.projects.length > 0) {
+        profile.projects.forEach((proj, index) => {
+            fields[`project_${index}`] = {
+                project_title: proj.project_title,
+                project_summary: proj.project_summary
+            };
+        });
+    }
+    
+    return fields;
+};
+
 // Get multiple field values at once
 const getMultipleFieldValues = (matchedFields, profile) => {
     return matchedFields.map(fieldName => ({
@@ -98,5 +211,6 @@ const hasFieldValue = (fieldName, profile) => {
 module.exports = {
     getFieldValue,
     getMultipleFieldValues,
-    hasFieldValue
+    hasFieldValue,
+    getAllAvailableFields
 };

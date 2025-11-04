@@ -243,48 +243,93 @@ class Profile {
     
     // Get profile by ID with all related data
     static async findById(id) {
-        const profileResult = await query(
-            'SELECT * FROM user_profiles WHERE id = $1',
-            [id]
-        );
-        
-        if (profileResult.rows.length === 0) {
-            return null;
+        try {
+            // Get main profile data
+            const profileResult = await query(
+                'SELECT * FROM user_profiles WHERE id = $1',
+                [id]
+            );
+            
+            if (profileResult.rows.length === 0) {
+                return null;
+            }
+            
+            const profile = profileResult.rows[0];
+            
+            // Get work experiences (primary first, then additional)
+            const experiencesResult = await query(
+                `SELECT * FROM work_experiences 
+                WHERE user_profile_id = $1 
+                ORDER BY is_primary DESC NULLS LAST, start_date DESC`,
+                [id]
+            );
+            
+            // Separate primary and additional work experiences
+            const allExperiences = experiencesResult.rows;
+            const primaryExperience = allExperiences.find(exp => exp.is_primary === true);
+            const additionalExperiences = allExperiences.filter(exp => exp.is_primary !== true);
+            
+            profile.work_experiences = additionalExperiences; // For autofill of additional fields
+            profile.all_work_experiences = allExperiences;    // For display purposes
+            profile.primary_work_experience = primaryExperience; // Primary experience
+            
+            // Get education (primary first, then additional)
+            const educationResult = await query(
+                `SELECT * FROM education 
+                WHERE user_profile_id = $1 
+                ORDER BY is_primary DESC NULLS LAST, education_start_date DESC`,
+                [id]
+            );
+            
+            // Separate primary and additional education
+            const allEducation = educationResult.rows;
+            const primaryEducation = allEducation.find(edu => edu.is_primary === true);
+            const additionalEducation = allEducation.filter(edu => edu.is_primary !== true);
+            
+            profile.education = additionalEducation;       // For autofill of additional fields
+            profile.all_education = allEducation;          // For display purposes
+            profile.primary_education = primaryEducation;  // Primary education
+            
+            // Get projects (primary first, then additional)
+            const projectsResult = await query(
+                `SELECT * FROM projects 
+                WHERE user_profile_id = $1 
+                ORDER BY is_primary DESC NULLS LAST, created_at DESC`,
+                [id]
+            );
+            
+            // Separate primary and additional projects
+            const allProjects = projectsResult.rows;
+            const primaryProject = allProjects.find(proj => proj.is_primary === true);
+            const additionalProjects = allProjects.filter(proj => proj.is_primary !== true);
+            
+            profile.projects = additionalProjects;      // For autofill of additional fields
+            profile.all_projects = allProjects;         // For display purposes
+            profile.primary_project = primaryProject;   // Primary project
+            
+            // Get skills
+            const skillsResult = await query(
+                `SELECT s.skill_name 
+                FROM skills s
+                JOIN user_skills us ON s.id = us.skill_id
+                WHERE us.user_profile_id = $1`,
+                [id]
+            );
+            profile.skills = skillsResult.rows.map(row => row.skill_name);
+            
+            // Log summary for debugging
+            console.log(`📊 Profile ${id} loaded:`);
+            console.log(`   Work Experiences: ${profile.all_work_experiences.length} total (${additionalExperiences.length} additional)`);
+            console.log(`   Education: ${profile.all_education.length} total (${additionalEducation.length} additional)`);
+            console.log(`   Projects: ${profile.all_projects.length} total (${additionalProjects.length} additional)`);
+            console.log(`   Skills: ${profile.skills.length}`);
+            
+            return profile;
+            
+        } catch (error) {
+            console.error('❌ Error in findById:', error);
+            throw error;
         }
-        
-        const profile = profileResult.rows[0];
-        
-        // Get work experiences
-        const experiencesResult = await query(
-            'SELECT * FROM work_experiences WHERE user_profile_id = $1 ORDER BY is_primary DESC, start_date DESC',
-            [id]
-        );
-        profile.work_experiences = experiencesResult.rows;
-        
-        // Get education
-        const educationResult = await query(
-            'SELECT * FROM education WHERE user_profile_id = $1 ORDER BY is_primary DESC, education_start_date DESC',
-            [id]
-        );
-        profile.education = educationResult.rows;
-        
-        // Get projects
-        const projectsResult = await query(
-            'SELECT * FROM projects WHERE user_profile_id = $1 ORDER BY is_primary DESC, id',
-            [id]
-        );
-        profile.projects = projectsResult.rows;
-        
-        // Get skills
-        const skillsResult = await query(`
-            SELECT s.skill_name 
-            FROM skills s
-            JOIN user_skills us ON s.id = us.skill_id
-            WHERE us.user_profile_id = $1
-        `, [id]);
-        profile.skills = skillsResult.rows.map(row => row.skill_name);
-        
-        return profile;
     }
     
     // Get profile by email
