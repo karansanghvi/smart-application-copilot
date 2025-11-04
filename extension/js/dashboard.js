@@ -426,12 +426,55 @@ async function autofillTabForm(tabId, buttonElement) {
         
         console.log('\n✅ AUTOFILL PROCESS COMPLETED SUCCESSFULLY');
         console.log('═══════════════════════════════════════════════════════════\n');
+
+        // ========== GENERATE PDF REPORT ==========
+try {
+    console.log('📄 Generating PDF report...');
+    
+    const reportGenerator = new AutofillReportGenerator();
+    const reportData = {
+        tabInfo: {
+            title: tab.title,
+            url: tab.url
+        },
+        totalFields: fields.length,
+        matchedFields: matchedFields,
+        fieldsWithoutValues: fieldsWithoutValues,
+        unmatchedFields: unmatchedFields,
+        filledCount: fillResponse.result.filledCount,
+        timestamp: new Date().toLocaleString()
+    };
+    
+    const pdfDoc = reportGenerator.generateReport(reportData);
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `JobFlow_Autofill_Report_${timestamp}.pdf`;
+    
+    // Download the PDF
+    reportGenerator.downloadPDF(pdfDoc, filename);
+    
+    console.log(`✅ PDF report generated: ${filename}`);
+    
+    // Show notification with option to view report
+    showNotification(
+        `Successfully filled ${fillResponse.result.filledCount} fields! PDF report downloaded.`,
+        'success'
+    );
+} catch (pdfError) {
+    console.error('❌ Failed to generate PDF report:', pdfError);
+    // Don't fail the whole process if PDF generation fails
+    showNotification(
+        `Successfully filled ${fillResponse.result.filledCount} out of ${fillData.length} fields!`,
+        'success'
+    );
+}
         
         // Show success message
-        showNotification(
-            `Successfully filled ${fillResponse.result.filledCount} out of ${fillData.length} fields!`,
-            'success'
-        );
+        // showNotification(
+        //     `Successfully filled ${fillResponse.result.filledCount} out of ${fillData.length} fields!`,
+        //     'success'
+        // );
 
         // Close modal after a delay
         setTimeout(() => {

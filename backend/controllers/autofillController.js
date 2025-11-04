@@ -1,3 +1,5 @@
+// autofillController.js
+
 const axios = require('axios');
 const Profile = require('../models/Profile');
 const { 
@@ -45,7 +47,7 @@ const getFieldValue = async (req, res) => {
             const aiResponse = await axios.post(`${AI_SERVICE_URL}/match`, {
                 formFieldLabel: formFieldLabel
             }, {
-                timeout: 10000,
+                timeout: 30000,
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -132,6 +134,7 @@ const getFieldValue = async (req, res) => {
 /**
  * Get autofill values for multiple form fields at once 
  * Useful for filling entire forms 
+ * Uses batch processing for better performance
  */
 const getMultipleFieldValues = async (req, res) => {
     try {
@@ -166,61 +169,56 @@ const getMultipleFieldValues = async (req, res) => {
             });
         }
 
-        // Step 2: Match all fields with AI in parallel 
-        const matchPromises = formFields.map(async (label) => {
-            try {
-                const response = await axios.post(`${AI_SERVICE_URL}/match`, {
-                    formFieldLabel: label
-                }, {
-                    timeout: 30000,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                console.log(`🔍 AI Response for "${label}":`, response.data);
-
-                const matchedField = response.data.matched_field;  
-                const confidence = response.data.confidence;       
-
-                // IMPORTANT: Check if match was successful
-                if (!matchedField || response.data.status !== 'success') {
-                    return {
-                        formFieldLabel: label,
-                        matched_field: null,
-                        value: null,
-                        confidence: confidence || 0,
-                        has_value: false,
-                        status: 'no_match'
-                    };
+        // Step 2: Call AI service with batch endpoint (all fields at once)
+        let aiResults;
+        try {
+            const response = await axios.post(`${AI_SERVICE_URL}/match-batch`, {
+                formFieldLabels: formFields  // Send all fields at once
+            }, {
+                timeout: 80000,
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
 
-                // Get value from profile if match found 
-                const value = extractFieldValue(matchedField, profile);
+            aiResults = response.data.results;
+            console.log(`🤖 AI batch processing completed: ${aiResults.length} fields processed`);
+        } catch (aiError) {
+            console.error('❌ AI batch service error:', aiError.message);
+            return res.status(503).json({
+                success: false,
+                error: 'AI service unavailable',
+                message: 'Unable to match form fields. Please ensure AI service is running.'
+            });
+        }
 
+        // Step 3: Process batch results and extract values from profile
+        const results = aiResults.map((aiResult, index) => {
+            const matchedField = aiResult.matched_field;
+            const confidence = aiResult.confidence;
+            
+            if (!matchedField || aiResult.status !== 'success') {
                 return {
-                    formFieldLabel: label,
-                    matched_field: matchedField,
-                    value: value,
-                    confidence: confidence,
-                    has_value: value !== null && value !== undefined && value !== '',
-                    status: 'success'
-                };
-            } catch (error) {
-                console.error(`❌ Error processing "${label}":`, error.message);
-                return {
-                    formFieldLabel: label,
+                    formFieldLabel: formFields[index],
                     matched_field: null,
                     value: null,
-                    confidence: 0,
+                    confidence: confidence || 0,
                     has_value: false,
-                    status: 'error',
-                    error: error.message
+                    status: 'no_match'
                 };
             }
+            
+            const value = extractFieldValue(matchedField, profile);
+            
+            return {
+                formFieldLabel: formFields[index],
+                matched_field: matchedField,
+                value: value,
+                confidence: confidence,
+                has_value: value !== null && value !== undefined && value !== '',
+                status: 'success'
+            };
         });
-
-        const results = await Promise.all(matchPromises);
 
         const successfulMatches = results.filter(r => r.matched_field && r.has_value).length;
 

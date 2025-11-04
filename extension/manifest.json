@@ -7,7 +7,8 @@
     "activeTab",
     "storage",
     "scripting",
-    "tabs"
+    "tabs",
+    "downloads"
   ],
   "host_permissions": [
     "https://*/*",
@@ -38,7 +39,8 @@
         "dashboard.html",
         "css/*",
         "js/*",
-        "icons/*"
+        "icons/*",
+        "libs/*"
       ],
       "matches": ["<all_urls>"]
     }
@@ -47,6 +49,6 @@
     "128": "icons/icon (Custom).png"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:3000 https://your-api-domain.com;"
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

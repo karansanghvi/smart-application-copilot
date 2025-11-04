@@ -16,7 +16,7 @@ const DROPDOWN_MAPPINGS = {
       'not_protected',
       'no_veteran'
     ],
-    'isVeteran': [
+    'iVeteran': [
       'I identify as one or more of the classifications of a protected veteran',
       'I identify as one or more of the classification of a protected veteran',
       'Protected Veteran',
@@ -35,6 +35,41 @@ const DROPDOWN_MAPPINGS = {
       'I don\'t wish to answer',
       'decline',
       'other'
+    ]
+  },
+
+  // Hispanic Latino
+  hispanicLatino: {
+    'yes': [
+      'Yes',
+      'yes',
+      'Hispanic',
+      'Latino',
+      'Latina',
+      'Latinx',
+      'Hispanic or Latino',
+      'I am Hispanic or Latino',
+      'Hispanic/Latino'
+    ],
+    'no': [
+      'No',
+      'no',
+      'Not Hispanic',
+      'Not Latino',
+      'Not Hispanic or Latino',
+      'I am not Hispanic or Latino',
+      'Neither Hispanic nor Latino'
+    ],
+    'otherHisLat': [
+      'Decline',
+      'Decline To Self Identify',
+      'Decline to Identify',
+      'Prefer not to answer',
+      'Prefer not to say',
+      'Choose not to disclose',
+      'I choose not to disclose',
+      'decline',
+      'prefer not'
     ]
   },
 
@@ -141,14 +176,7 @@ const DROPDOWN_MAPPINGS = {
       'F',
       'Woman'
     ],
-    'nonBinary': [
-      'Non-binary',
-      'Non binary',
-      'Nonbinary',
-      'non_binary',
-      'Other'
-    ],
-    'declineGender': [
+    'otherGender': [
       'Prefer not to answer',
       'Decline to self identify',
       'Decline',
@@ -226,45 +254,45 @@ const DROPDOWN_MAPPINGS = {
   },
 
   // Non-compete / Restrictive Covenants
-  has_noncompete: {
-    'Yes': [
+  restrictive_bond: {
+    'yes': [
       'Yes',
       'yes',
       'Y',
       'true',
-      '1',
-      'I have restrictive covenants'
+      '1'
     ],
-    'No': [
+    'no': [
       'No',
       'no',
       'N',
       'false',
-      '0',
-      'No restrictive covenants',
-      'I do not have restrictive covenants'
+      '0'
     ]
   },
 
   // Education Degree Levels
   degree: {
     'highSchool': [
-      'High School Diploma',
       'High School',
+      'High School Diploma',
       'GED',
       'Secondary School',
       'high_school',
-      'highschool'
+      'highschool',
+      'secondary'
     ],
-    'associate': [
+    'associateDegree': [
       'Associate Degree',
       'Associate\'s Degree',
       'Associate\'s',
+      'Associate',
       'A.A.',
       'A.S.',
-      'associate'
+      'associate',
+      'associates'
     ],
-    'bachelor': [
+    'bachelorDegree': [
       'Bachelor\'s Degree',
       'Bachelor Degree',
       'Bachelor\'s',
@@ -277,7 +305,7 @@ const DROPDOWN_MAPPINGS = {
       'bachelor',
       'bachelors'
     ],
-    'master': [
+    'mastersDegree': [
       'Master\'s Degree',
       'Master Degree',
       'Master\'s',
@@ -287,29 +315,65 @@ const DROPDOWN_MAPPINGS = {
       'M.Sc.',
       'MS',
       'MA',
-      'MBA',
       'master',
       'masters'
     ],
-    'doctorate': [
+    'mbaDegree': [
+      'MBA',
+      'Master\'s Of Business Administration',
+      'Master of Business Administration',
+      'M.B.A.',
+      'Master Business Administration',
+      'mba'
+    ],
+    'jurisDegree': [
+      'JD',
+      'Juris Doctor',
+      'Juris Doctorate',
+      'J.D.',
+      'Doctor of Law',
+      'Law Degree',
+      'juris',
+      'law'
+    ],
+    'doctorOfMedicine': [
+      'MD',
+      'M.D.',
+      'Doctor of Medicine',
+      'Medical Doctor',
+      'Medicine',
+      'medical degree',
+      'doctor medicine'
+    ],
+    'doctorOfPhilosophy': [
+      'PhD',
+      'Ph.D.',
+      'Doctor of Philosophy',
       'Doctorate',
       'Doctoral Degree',
-      'Ph.D.',
-      'PhD',
-      'Doctor of Philosophy',
+      'phd',
       'doctorate',
-      'phd'
+      'doctor philosophy'
     ],
-    'someCollege': [
-      'Some College',
-      'Some College (No Degree)',
-      'College - No Degree',
-      'some_college'
+    'engineerDegree': [
+      'Engineer Degree',
+      'Engineering Degree',
+      'B.E.',
+      'B.Eng.',
+      'M.E.',
+      'M.Eng.',
+      'Bachelor of Engineering',
+      'Master of Engineering',
+      'engineer',
+      'engineering'
     ],
-    'other': [
+    'otherDegree': [
       'Other',
       'Professional Degree',
-      'Vocational'
+      'Vocational',
+      'Certificate',
+      'Diploma',
+      'other'
     ]
   },
 

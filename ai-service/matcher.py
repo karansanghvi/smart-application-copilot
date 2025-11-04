@@ -1,3 +1,4 @@
+# matcher.py
 # import libraries 
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -113,7 +114,7 @@ def find_best_match(model, form_field_label):
     print(f"Best match: '{best_field}' with {best_score:.2%} confidence")
     
     # Lowered threshold to 60% for better coverage
-    CONFIDENCE_THRESHOLD = 0.60  # ← Changed from 0.70
+    CONFIDENCE_THRESHOLD = 0.45  # ← Changed from 0.50
     
     if best_score >= CONFIDENCE_THRESHOLD:
         return {
