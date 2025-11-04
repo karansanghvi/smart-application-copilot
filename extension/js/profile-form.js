@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="experience-item additional-experience" data-education-id="${educationCount}">
         <div class="experience-header">
           <h3>Additional Education ${educationCount}</h3>
-          <button type="button" class="remove-education-btn" data-remove-id="${educationCount}">
+          <button type="button" class="remove-experience-btn" data-remove-id="${educationCount}">
             Remove
           </button>
         </div>
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="experience-item additional-experience" data-project-id="${projectCount}">
         <div class="experience-header">
           <h3>Additional Project ${projectCount}</h3>
-          <button type="button" class="remove-project-btn" data-remove-id="${projectCount}">
+          <button type="button" class="remove-experience-btn" data-remove-id="${projectCount}">
             Remove
           </button>
         </div>
