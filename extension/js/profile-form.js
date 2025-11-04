@@ -1,3 +1,5 @@
+// profile-form.js
+
 document.addEventListener('DOMContentLoaded', () => {
   // State
   let currentStep = 1;
@@ -110,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Education Management
+  // ✅ FIXED: Education Management
   const addEducationBtn = document.getElementById('addEducationBtn');
   const additionalEducationContainer = document.getElementById('additionalEducation');
 
@@ -124,10 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
     educationCount++;
     
     const educationHTML = `
-      <div class="experience-item additional-experience" data-experience-id="${educationCount}">
+      <div class="experience-item additional-experience" data-education-id="${educationCount}">
         <div class="experience-header">
-          <h3>Previous Education ${educationCount}</h3>
-          <button type="button" class="remove-experience-btn" data-remove-id="${educationCount}">
+          <h3>Additional Education ${educationCount}</h3>
+          <button type="button" class="remove-education-btn" data-remove-id="${educationCount}">
             Remove
           </button>
         </div>
@@ -194,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Education Management
+  // ✅ FIXED: Project Management
   const addProjectBtn = document.getElementById('addProjectBtn');
   const additionalProjectContainer = document.getElementById('additionalProject');
 
@@ -207,29 +209,29 @@ document.addEventListener('DOMContentLoaded', () => {
   function addProjectItem() {
     projectCount++;
     
-    const educationHTML = `
-      <div class="experience-item additional-experience" data-experience-id="${projectCount}">
+    const projectHTML = `
+      <div class="experience-item additional-experience" data-project-id="${projectCount}">
         <div class="experience-header">
-          <h3>Previous Project ${projectCount}</h3>
-          <button type="button" class="remove-experience-btn" data-remove-id="${projectCount}">
+          <h3>Additional Project ${projectCount}</h3>
+          <button type="button" class="remove-project-btn" data-remove-id="${projectCount}">
             Remove
           </button>
         </div>
 
         <div class="form-group">
           <label for="projectTitle${projectCount}">Enter Project Title *</label>
-          <input type="text" id="projectTitle${projectCount}" name="projectTitle${projectCount}" placeholder="Project Name">
+          <input type="text" id="projectTitle${projectCount}" name="projectTitle${projectCount}" placeholder="Project Name" required>
         </div>
 
         <div class="form-group">
-          <label for="projectSummary${projectCount}">Project Description</label>
+          <label for="projectSummary${projectCount}">Project Description *</label>
           <textarea id="projectSummary${projectCount}" name="projectSummary${projectCount}" rows="20" 
-            placeholder="Describe your project..."></textarea>
+            placeholder="Describe your project..." required></textarea>
         </div>
       </div>
     `;
     
-    additionalProjectContainer.insertAdjacentHTML('beforeend', educationHTML);
+    additionalProjectContainer.insertAdjacentHTML('beforeend', projectHTML);
     
     const newProject = additionalProjectContainer.lastElementChild;
     newProject.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -501,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn.innerHTML = '<span>Saving...</span>';
 
     try {
-      // Collect additional experiences
+      // ✅ FIXED: Collect additional experiences
       const additionalExperiences = [];
       for (let i = 1; i <= experienceCount; i++) {
         const expItem = document.querySelector(`[data-experience-id="${i}"]`);
@@ -517,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       
-      // Collect additional education
+      // ✅ FIXED: Collect additional education
       const additionalEducation = [];
       for (let i = 1; i <= educationCount; i++) {
         const eduItem = document.querySelector(`[data-education-id="${i}"]`);
@@ -532,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       
-      // Collect additional projects
+      // ✅ FIXED: Collect additional projects
       const additionalProject = [];
       for (let i = 1; i <= projectCount; i++) {
         const projectItem = document.querySelector(`[data-project-id="${i}"]`);
@@ -592,11 +594,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Additional experiences
         additionalExperiences: additionalExperiences,
 
-        // Projects - ✅ FIXED: Added .value to get text content
+        // Projects
         projectTitle: formElements.projectTitle?.value || '',
         projectSummary: formElements.projectSummary?.value || '',
         
-        // Additional Projects - ✅ FIXED: Changed from plural to singular to match backend
+        // Additional Projects
         additionalProject: additionalProject,
         
         // Skills & Expertise (Step 4)

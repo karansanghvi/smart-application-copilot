@@ -53,8 +53,8 @@ class Profile {
                 profileData.endDate || null,
                 profileData.currentlyWorking || false,
                 profileData.professionalSummary,
-                profileData.projectTitle || false,
-                profileData.projectSummary || false,
+                profileData.projectTitle || null,
+                profileData.projectSummary || null,
                 profileData.linkedin || null,
                 profileData.github || null,
                 profileData.website || null,
@@ -80,13 +80,13 @@ class Profile {
             const result = await client.query(profileQuery, profileValues);
             const userId = result.rows[0].id;
             
-            // ✅ Insert PRIMARY education into education table
+            // ✅ Insert PRIMARY education into education table WITH is_primary flag
             console.log('Inserting primary education into education table...');
             await client.query(`
                 INSERT INTO education (
                     user_profile_id, university_name, field_of_study, 
-                    education_start_date, education_end_date, degree
-                ) VALUES ($1, $2, $3, $4, $5, $6)
+                    education_start_date, education_end_date, degree, is_primary
+                ) VALUES ($1, $2, $3, $4, $5, $6, true)
             `, [
                 userId,
                 profileData.universityName,
@@ -96,7 +96,7 @@ class Profile {
                 profileData.degree
             ]);
             
-            // ✅ Insert additional education entries
+            // ✅ Insert additional education entries WITH is_primary = false
             if (profileData.additionalEducation && profileData.additionalEducation.length > 0) {
                 console.log(`Inserting ${profileData.additionalEducation.length} additional education entries...`);
                 
@@ -110,8 +110,8 @@ class Profile {
                     await client.query(`
                         INSERT INTO education (
                             user_profile_id, university_name, field_of_study, 
-                            education_start_date, education_end_date, degree
-                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                            education_start_date, education_end_date, degree, is_primary
+                        ) VALUES ($1, $2, $3, $4, $5, $6, false)
                     `, [
                         userId,
                         edu.universityName,
@@ -123,13 +123,13 @@ class Profile {
                 }
             }
             
-            // ✅ Insert PRIMARY work experience into work_experiences table
+            // ✅ Insert PRIMARY work experience into work_experiences table WITH is_primary flag
             console.log('Inserting primary experience into work_experiences table...');
             await client.query(`
                 INSERT INTO work_experiences (
                     user_profile_id, job_title, company_name, 
-                    start_date, end_date, currently_working, job_description
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    start_date, end_date, currently_working, job_description, is_primary
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, true)
             `, [
                 userId,
                 profileData.jobTitle,
@@ -140,7 +140,7 @@ class Profile {
                 profileData.professionalSummary
             ]);
             
-            // ✅ Insert additional work experiences
+            // ✅ Insert additional work experiences WITH is_primary = false
             if (profileData.additionalExperiences && profileData.additionalExperiences.length > 0) {
                 console.log(`Inserting ${profileData.additionalExperiences.length} additional experiences...`);
                 
@@ -154,8 +154,8 @@ class Profile {
                     await client.query(`
                         INSERT INTO work_experiences (
                             user_profile_id, job_title, company_name, 
-                            start_date, end_date, currently_working, job_description
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                            start_date, end_date, currently_working, job_description, is_primary
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, false)
                     `, [
                         userId,
                         exp.jobTitle,
@@ -168,19 +168,19 @@ class Profile {
                 }
             }
 
-            // ✅ Insert PRIMARY projects into projects table
+            // ✅ Insert PRIMARY project into projects table WITH is_primary flag
             console.log('Inserting primary project into projects table...');
             await client.query(`
                 INSERT INTO projects (
-                    user_profile_id, project_title, project_summary
-                ) VALUES ($1, $2, $3)
+                    user_profile_id, project_title, project_summary, is_primary
+                ) VALUES ($1, $2, $3, true)
             `, [
                 userId,
                 profileData.projectTitle || null,
                 profileData.projectSummary || null
             ]);
             
-            // ✅ Insert additional projects
+            // ✅ Insert additional projects WITH is_primary = false
             if (profileData.additionalProject && profileData.additionalProject.length > 0) {
                 console.log(`Inserting ${profileData.additionalProject.length} additional projects...`);
                 
@@ -193,8 +193,8 @@ class Profile {
                     
                     await client.query(`
                         INSERT INTO projects (
-                            user_profile_id, project_title, project_summary
-                        ) VALUES ($1, $2, $3)
+                            user_profile_id, project_title, project_summary, is_primary
+                        ) VALUES ($1, $2, $3, false)
                     `, [
                         userId,
                         proj.projectTitle,
@@ -256,21 +256,21 @@ class Profile {
         
         // Get work experiences
         const experiencesResult = await query(
-            'SELECT * FROM work_experiences WHERE user_profile_id = $1 ORDER BY start_date DESC',
+            'SELECT * FROM work_experiences WHERE user_profile_id = $1 ORDER BY is_primary DESC, start_date DESC',
             [id]
         );
         profile.work_experiences = experiencesResult.rows;
         
         // Get education
         const educationResult = await query(
-            'SELECT * FROM education WHERE user_profile_id = $1 ORDER BY education_start_date DESC',
+            'SELECT * FROM education WHERE user_profile_id = $1 ORDER BY is_primary DESC, education_start_date DESC',
             [id]
         );
         profile.education = educationResult.rows;
         
         // Get projects
         const projectsResult = await query(
-            'SELECT * FROM projects WHERE user_profile_id = $1 ORDER BY id',
+            'SELECT * FROM projects WHERE user_profile_id = $1 ORDER BY is_primary DESC, id',
             [id]
         );
         profile.projects = projectsResult.rows;
@@ -328,6 +328,11 @@ class Profile {
                 city: 'city',
                 state: 'state',
                 country: 'country',
+                universityName: 'university_name',
+                fieldOfStudy: 'field_of_study',
+                educationStartDate: 'education_start_date',
+                educationEndDate: 'education_end_date',
+                degree: 'degree',
                 jobTitle: 'job_title',
                 companyName: 'company_name',
                 startDate: 'start_date',
@@ -342,9 +347,11 @@ class Profile {
                 workType: 'work_type',
                 expectedSalary: 'expected_salary',
                 preferredLocations: 'preferred_locations',
+                relocate: 'work_relocate',
                 authorized: 'work_authorized',
                 sponsorship: 'visa_sponsorship_required',
                 visaSponsorship: 'visa_sponsorship_type',
+                restrictiveBond: 'restrictive_bond',
                 resumeFilename: 'resume_filename',
                 resumePath: 'resume_path',
                 coverLetterFilename: 'cover_letter_filename',
@@ -380,40 +387,100 @@ class Profile {
                 }
             }
             
-            // update, delete and insert additional experience 
-            if (profileData.additionalExperiences !== undefined) {
-                console.log('🔄 Updating additional work experiences...');
+            // Update education if provided
+            if (profileData.additionalEducation !== undefined) {
+                console.log('🔄 Updating education...');
                 
-                await client.query(`
-                    UPDATE work_experiences 
-                    SET job_title = $1, 
-                        company_name = $2, 
-                        start_date = $3, 
-                        end_date = $4, 
-                        currently_working = $5, 
-                        job_description = $6
-                    WHERE user_profile_id = $7 
-                    AND job_title = (SELECT job_title FROM user_profiles WHERE id = $7)
-                    AND company_name = (SELECT company_name FROM user_profiles WHERE id = $7)
-                `, [
-                    profileData.jobTitle || null,
-                    profileData.companyName || null,
-                    profileData.startDate || null,
-                    profileData.endDate || null,
-                    profileData.currentlyWorking || false,
-                    profileData.professionalSummary || null,
-                    id
-                ]);
+                // Update primary education in both user_profiles and education tables
+                if (profileData.universityName || profileData.fieldOfStudy || profileData.educationStartDate || profileData.degree) {
+                    await client.query(`
+                        UPDATE education 
+                        SET university_name = $1, 
+                            field_of_study = $2, 
+                            education_start_date = $3, 
+                            education_end_date = $4, 
+                            degree = $5,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_profile_id = $6 AND is_primary = true
+                    `, [
+                        profileData.universityName || null,
+                        profileData.fieldOfStudy || null,
+                        profileData.educationStartDate || null,
+                        profileData.educationEndDate || null,
+                        profileData.degree || null,
+                        id
+                    ]);
+                }
                 
+                // Delete all non-primary education
                 await client.query(`
-                    DELETE FROM work_experiences 
-                    WHERE user_profile_id = $1 
-                    AND NOT (
-                        job_title = (SELECT job_title FROM user_profiles WHERE id = $1)
-                        AND company_name = (SELECT company_name FROM user_profiles WHERE id = $1)
-                    )
+                    DELETE FROM education 
+                    WHERE user_profile_id = $1 AND (is_primary = false OR is_primary IS NULL)
                 `, [id]);
                 
+                // Insert new additional education
+                const additionalEducation = Array.isArray(profileData.additionalEducation) 
+                    ? profileData.additionalEducation 
+                    : [];
+                    
+                for (const edu of additionalEducation) {
+                    if (!edu.universityName || !edu.fieldOfStudy || !edu.educationStartDate || !edu.degree) {
+                        console.log('⚠️ Skipping invalid education:', edu);
+                        continue;
+                    }
+                    
+                    await client.query(`
+                        INSERT INTO education (
+                            user_profile_id, university_name, field_of_study, 
+                            education_start_date, education_end_date, degree, is_primary
+                        ) VALUES ($1, $2, $3, $4, $5, $6, false)
+                    `, [
+                        id,
+                        edu.universityName,
+                        edu.fieldOfStudy,
+                        edu.educationStartDate,
+                        edu.educationEndDate || null,
+                        edu.degree
+                    ]);
+                }
+                
+                console.log(`✅ Updated ${additionalEducation.length} additional education entries`);
+            }
+
+            // Update work experiences if provided
+            if (profileData.additionalExperiences !== undefined) {
+                console.log('🔄 Updating work experiences...');
+                
+                // Update primary experience in both user_profiles and work_experiences tables
+                if (profileData.jobTitle || profileData.companyName || profileData.startDate) {
+                    await client.query(`
+                        UPDATE work_experiences 
+                        SET job_title = $1, 
+                            company_name = $2, 
+                            start_date = $3, 
+                            end_date = $4, 
+                            currently_working = $5, 
+                            job_description = $6,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_profile_id = $7 AND is_primary = true
+                    `, [
+                        profileData.jobTitle || null,
+                        profileData.companyName || null,
+                        profileData.startDate || null,
+                        profileData.endDate || null,
+                        profileData.currentlyWorking || false,
+                        profileData.professionalSummary || null,
+                        id
+                    ]);
+                }
+                
+                // Delete all non-primary experiences
+                await client.query(`
+                    DELETE FROM work_experiences 
+                    WHERE user_profile_id = $1 AND (is_primary = false OR is_primary IS NULL)
+                `, [id]);
+                
+                // Insert new additional experiences
                 const additionalExps = Array.isArray(profileData.additionalExperiences) 
                     ? profileData.additionalExperiences 
                     : [];
@@ -427,8 +494,8 @@ class Profile {
                     await client.query(`
                         INSERT INTO work_experiences (
                             user_profile_id, job_title, company_name, 
-                            start_date, end_date, currently_working, job_description
-                        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+                            start_date, end_date, currently_working, job_description, is_primary
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, false)
                     `, [
                         id,
                         exp.jobTitle,
@@ -443,92 +510,32 @@ class Profile {
                 console.log(`✅ Updated ${additionalExps.length} additional experiences`);
             }
 
-            // update, delete and insert additional education
-            if (profileData.additionalEducation !== undefined) {
-                console.log('🔄 Updating additional education...');
+            // Update projects if provided
+            if (profileData.additionalProject !== undefined) {
+                console.log('🔄 Updating projects...');
                 
-                await client.query(`
-                    UPDATE education 
-                    SET university_name = $1, 
-                        field_of_study = $2, 
-                        education_start_date = $3, 
-                        education_end_date = $4, 
-                        degree = $5
-                    WHERE user_profile_id = $6
-                    AND university_name = (SELECT university_name FROM user_profiles WHERE id = $6)
-                    AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $6)
-                `, [
-                    profileData.universityName || null,
-                    profileData.fieldOfStudy || null,
-                    profileData.educationStartDate || null,
-                    profileData.educationEndDate || null,
-                    profileData.degree || null,
-                    id
-                ]);
-                
-                await client.query(`
-                    DELETE FROM education 
-                    WHERE user_profile_id = $1 
-                    AND NOT (
-                        university_name = (SELECT university_name FROM user_profiles WHERE id = $1)
-                        AND field_of_study = (SELECT field_of_study FROM user_profiles WHERE id = $1)
-                    )
-                `, [id]);
-                
-                const additionalEducation = Array.isArray(profileData.additionalEducation) 
-                    ? profileData.additionalEducation 
-                    : [];
-                    
-                for (const edu of additionalEducation) {
-                    if (!edu.universityName || !edu.fieldOfStudy) {
-                        console.log('⚠️ Skipping invalid education:', edu);
-                        continue;
-                    }
-                    
+                // Update primary project in both user_profiles and projects tables
+                if (profileData.projectTitle !== undefined || profileData.projectSummary !== undefined) {
                     await client.query(`
-                        INSERT INTO education (
-                            user_profile_id, university_name, field_of_study, 
-                            education_start_date, education_end_date, degree
-                        ) VALUES ($1, $2, $3, $4, $5, $6)
+                        UPDATE projects 
+                        SET project_title = $1, 
+                            project_summary = $2,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE user_profile_id = $3 AND is_primary = true
                     `, [
-                        id,
-                        edu.universityName,
-                        edu.fieldOfStudy,
-                        edu.educationStartDate,
-                        edu.educationEndDate,
-                        edu.degree
+                        profileData.projectTitle || null,
+                        profileData.projectSummary || null,
+                        id
                     ]);
                 }
                 
-                console.log(`✅ Updated ${additionalEducation.length} additional education`);
-            }
-
-            // update, delete and insert additional projects
-            if (profileData.additionalProject !== undefined) {
-                console.log('🔄 Updating additional projects...');
-                
-                // Update the primary project
-                await client.query(`
-                    UPDATE projects 
-                    SET project_title = $1, 
-                        project_summary = $2
-                    WHERE user_profile_id = $3
-                    AND project_title = (SELECT project_title FROM user_profiles WHERE id = $3)
-                `, [
-                    profileData.projectTitle || null,
-                    profileData.projectSummary || null,
-                    id
-                ]);
-                
-                // Delete all additional projects (keep only the primary one)
+                // Delete all non-primary projects
                 await client.query(`
                     DELETE FROM projects 
-                    WHERE user_profile_id = $1 
-                    AND NOT (
-                        project_title = (SELECT project_title FROM user_profiles WHERE id = $1)
-                    )
+                    WHERE user_profile_id = $1 AND (is_primary = false OR is_primary IS NULL)
                 `, [id]);
                 
+                // Insert new additional projects
                 const additionalProjects = Array.isArray(profileData.additionalProject) 
                     ? profileData.additionalProject 
                     : [];
@@ -541,8 +548,8 @@ class Profile {
                     
                     await client.query(`
                         INSERT INTO projects (
-                            user_profile_id, project_title, project_summary
-                        ) VALUES ($1, $2, $3)
+                            user_profile_id, project_title, project_summary, is_primary
+                        ) VALUES ($1, $2, $3, false)
                     `, [
                         id,
                         proj.projectTitle,
@@ -553,12 +560,17 @@ class Profile {
                 console.log(`✅ Updated ${additionalProjects.length} additional projects`);
             }
             
+            // Update skills if provided
             if (profileData.skills && Array.isArray(profileData.skills)) {
+                console.log('🔄 Updating skills...');
+                
+                // Delete existing skills
                 await client.query(
                     'DELETE FROM user_skills WHERE user_profile_id = $1',
                     [id]
                 );
                 
+                // Insert new skills
                 for (const skillName of profileData.skills) {
                     const skillResult = await client.query(`
                         INSERT INTO skills (skill_name) 
@@ -575,6 +587,8 @@ class Profile {
                         VALUES ($1, $2)
                     `, [id, skillId]);
                 }
+                
+                console.log(`✅ Updated ${profileData.skills.length} skills`);
             }
             
             await client.query('COMMIT');
@@ -582,6 +596,7 @@ class Profile {
             
         } catch (error) {
             await client.query('ROLLBACK');
+            console.error('❌ Error updating profile:', error);
             throw error;
         } finally {
             client.release();
