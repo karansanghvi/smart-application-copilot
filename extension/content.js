@@ -593,9 +593,127 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     return true;
   }
+
+  // Handle file input highlighting
+  if (request.action === 'highlightFileInput') {
+    try {
+      const element = document.querySelector(request.selector);
+      
+      if (element && element.type === 'file') {
+        console.log(`📁 Highlighting file input for: ${request.filename}`);
+        
+        // Highlight the file input with enhanced styling
+        element.style.border = '3px solid #10b981';
+        element.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+        element.style.padding = '8px';
+        element.style.borderRadius = '6px';
+        element.style.backgroundColor = '#f0fdf4';
+        
+        // Scroll into view
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Add enhanced tooltip/label
+        const tooltip = document.createElement('div');
+        tooltip.className = 'jobflow-file-tooltip';
+        tooltip.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 20px;">📁</span>
+            <div>
+              <div style="font-weight: 600;">Upload Required</div>
+              <div style="font-size: 12px; opacity: 0.9;">${request.filename}</div>
+            </div>
+          </div>
+        `;
+        tooltip.style.cssText = `
+          position: fixed;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          z-index: 999999;
+          box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+          pointer-events: none;
+          animation: fadeInBounce 0.5s ease;
+        `;
+        
+        // Position tooltip above the input
+        const rect = element.getBoundingClientRect();
+        tooltip.style.top = `${rect.top + window.scrollY - 70}px`;
+        tooltip.style.left = `${rect.left + window.scrollX}px`;
+        
+        document.body.appendChild(tooltip);
+        
+        // Remove highlight and tooltip after 10 seconds
+        setTimeout(() => {
+          element.style.border = '';
+          element.style.boxShadow = '';
+          element.style.padding = '';
+          element.style.borderRadius = '';
+          element.style.backgroundColor = '';
+          tooltip.remove();
+        }, 10000);
+        
+        sendResponse({ success: true });
+      } else {
+        console.warn('File input not found:', request.selector);
+        sendResponse({ success: false, error: 'File input not found' });
+      }
+    } catch (error) {
+      console.error('Error highlighting file input:', error);
+      sendResponse({ success: false, error: error.message });
+    }
+    return true;
+  }
   
   return true;
 });
+
+// Add CSS animation for tooltip
+if (!document.getElementById('jobflow-animations')) {
+  const style = document.createElement('style');
+  style.id = 'jobflow-animations';
+  style.textContent = `
+    @keyframes fadeInBounce {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(5px) scale(1.05);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(100px);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // Auto-detect when page loads
 window.addEventListener('load', () => {
@@ -631,15 +749,18 @@ function detectFormFields() {
       value: element.value || '',
       label: getFieldLabel(element),
       selector: getUniqueSelector(element),
-      // Add dropdown-specific info
+      // Dropdown info
       isDropdown: element.tagName.toLowerCase() === 'select',
-      options: element.tagName.toLowerCase() === 'select' ? getDropdownOptions(element) : []
+      options: element.tagName.toLowerCase() === 'select' ? getDropdownOptions(element) : [],
+      // File input info
+      isFileInput: element.type === 'file',
+      acceptedFileTypes: element.type === 'file' ? (element.accept || '*/*') : null
     };
 
     fields.push(fieldInfo);
   });
 
-  console.log(`JobFlow: Detected ${fields.length} form fields`);
+  console.log(`JobFlow: Detected ${fields.length} form fields (including ${fields.filter(f => f.isFileInput).length} file inputs)`);
   return fields;
 }
 
@@ -747,6 +868,12 @@ function autofillFormFields(fieldValues) {
       console.log(`  Value from profile: "${value}"`);
       console.log(`  Element type: ${element.tagName} (${element.type || 'N/A'})`);
 
+      // Skip file inputs (they're handled separately)
+      if (element.type === 'file') {
+        console.log(`  ⏭️ Skipping file input (handled separately)`);
+        return;
+      }
+
       // Check if it's a dropdown/select element
       if (element.tagName.toLowerCase() === 'select') {
         const success = fillDropdown(element, value, fieldLabel);
@@ -757,8 +884,42 @@ function autofillFormFields(fieldValues) {
           errors.push(`Could not find matching option for: ${fieldLabel}`);
           console.warn(`  ❌ Could not find matching dropdown option`);
         }
-      } else {
-        // Regular input/textarea field
+      } 
+      // Check if it's a date input
+      else if (element.type === 'date') {
+        const success = fillDateField(element, value, fieldLabel);
+        if (success) {
+          filledCount++;
+          console.log(`  ✅ Date field filled successfully`);
+        } else {
+          errors.push(`Could not format date for: ${fieldLabel}`);
+          console.warn(`  ❌ Could not fill date field`);
+        }
+      }
+      // Check if it's a month input
+      else if (element.type === 'month') {
+        const success = fillMonthField(element, value, fieldLabel);
+        if (success) {
+          filledCount++;
+          console.log(`  ✅ Month field filled successfully`);
+        } else {
+          errors.push(`Could not format month for: ${fieldLabel}`);
+          console.warn(`  ❌ Could not fill month field`);
+        }
+      }
+      // Check if it's a week input
+      else if (element.type === 'week') {
+        const success = fillWeekField(element, value, fieldLabel);
+        if (success) {
+          filledCount++;
+          console.log(`  ✅ Week field filled successfully`);
+        } else {
+          errors.push(`Could not format week for: ${fieldLabel}`);
+          console.warn(`  ❌ Could not fill week field`);
+        }
+      }
+      // Regular input/textarea field
+      else {
         element.value = value;
 
         // Trigger events
@@ -785,13 +946,243 @@ function autofillFormFields(fieldValues) {
   console.log(`\nJobFlow: Autofill complete. Filled ${filledCount}/${fieldValues.length} fields.`);
   
   // Show notification on the page
-  showPageNotification(`✅ Filled ${filledCount} fields!`, 'success');
+  if (filledCount > 0) {
+    showPageNotification(`✅ Filled ${filledCount} fields!`, 'success');
+  }
   
   return {
     filledCount,
     totalFields: fieldValues.length,
     errors
   };
+}
+
+// ==================== DATE FIELD FILLING LOGIC ====================
+
+/**
+ * Fill a date input field
+ * Accepts various date formats and converts to YYYY-MM-DD
+ */
+function fillDateField(dateElement, dateValue, fieldLabel) {
+  console.log(`  📅 Date input detected`);
+  console.log(`  Raw date value: "${dateValue}"`);
+  
+  try {
+    // Parse the date value into a standardized format
+    const formattedDate = formatDateForInput(dateValue);
+    
+    if (!formattedDate) {
+      console.warn(`  ⚠️ Could not parse date: "${dateValue}"`);
+      return false;
+    }
+    
+    console.log(`  📅 Formatted date: "${formattedDate}"`);
+    
+    // Set the value
+    dateElement.value = formattedDate;
+    
+    // Trigger events
+    dateElement.dispatchEvent(new Event('input', { bubbles: true }));
+    dateElement.dispatchEvent(new Event('change', { bubbles: true }));
+    dateElement.dispatchEvent(new Event('blur', { bubbles: true }));
+    
+    // Visual feedback
+    dateElement.style.border = '2px solid #8B5CF6';
+    setTimeout(() => {
+      dateElement.style.border = '';
+    }, 2000);
+    
+    return true;
+  } catch (error) {
+    console.error(`  ❌ Error filling date field:`, error);
+    return false;
+  }
+}
+
+/**
+ * Fill a month input field (format: YYYY-MM)
+ */
+function fillMonthField(monthElement, dateValue, fieldLabel) {
+  console.log(`  📅 Month input detected`);
+  console.log(`  Raw date value: "${dateValue}"`);
+  
+  try {
+    const formattedMonth = formatMonthForInput(dateValue);
+    
+    if (!formattedMonth) {
+      console.warn(`  ⚠️ Could not parse month: "${dateValue}"`);
+      return false;
+    }
+    
+    console.log(`  📅 Formatted month: "${formattedMonth}"`);
+    
+    monthElement.value = formattedMonth;
+    
+    // Trigger events
+    monthElement.dispatchEvent(new Event('input', { bubbles: true }));
+    monthElement.dispatchEvent(new Event('change', { bubbles: true }));
+    monthElement.dispatchEvent(new Event('blur', { bubbles: true }));
+    
+    // Visual feedback
+    monthElement.style.border = '2px solid #8B5CF6';
+    setTimeout(() => {
+      monthElement.style.border = '';
+    }, 2000);
+    
+    return true;
+  } catch (error) {
+    console.error(`  ❌ Error filling month field:`, error);
+    return false;
+  }
+}
+
+/**
+ * Fill a week input field (format: YYYY-Www)
+ */
+function fillWeekField(weekElement, dateValue, fieldLabel) {
+  console.log(`  📅 Week input detected`);
+  console.log(`  Raw date value: "${dateValue}"`);
+  
+  try {
+    const formattedWeek = formatWeekForInput(dateValue);
+    
+    if (!formattedWeek) {
+      console.warn(`  ⚠️ Could not parse week: "${dateValue}"`);
+      return false;
+    }
+    
+    console.log(`  📅 Formatted week: "${formattedWeek}"`);
+    
+    weekElement.value = formattedWeek;
+    
+    // Trigger events
+    weekElement.dispatchEvent(new Event('input', { bubbles: true }));
+    weekElement.dispatchEvent(new Event('change', { bubbles: true }));
+    weekElement.dispatchEvent(new Event('blur', { bubbles: true }));
+    
+    // Visual feedback
+    weekElement.style.border = '2px solid #8B5CF6';
+    setTimeout(() => {
+      weekElement.style.border = '';
+    }, 2000);
+    
+    return true;
+  } catch (error) {
+    console.error(`  ❌ Error filling week field:`, error);
+    return false;
+  }
+}
+
+/**
+ * Format date to YYYY-MM-DD
+ * Accepts various formats:
+ * - ISO 8601: "2024-03-15", "2024-03-15T10:30:00Z"
+ * - US Format: "03/15/2024", "3/15/2024"
+ * - EU Format: "15/03/2024", "15.03.2024"
+ * - Long Format: "March 15, 2024", "15 March 2024"
+ * - Timestamp: 1710504000000
+ */
+function formatDateForInput(dateValue) {
+  if (!dateValue) return null;
+  
+  let date;
+  
+  // If it's already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  // Try parsing as ISO string or standard date formats
+  date = new Date(dateValue);
+  
+  // Check if valid
+  if (!isNaN(date.getTime())) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Try parsing MM/DD/YYYY or DD/MM/YYYY
+  const slashMatch = dateValue.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  if (slashMatch) {
+    const [, first, second, year] = slashMatch;
+    
+    // Try US format first (MM/DD/YYYY)
+    const usDate = new Date(year, parseInt(first) - 1, parseInt(second));
+    if (!isNaN(usDate.getTime()) && parseInt(first) <= 12) {
+      const month = String(usDate.getMonth() + 1).padStart(2, '0');
+      const day = String(usDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    // Try EU format (DD/MM/YYYY)
+    const euDate = new Date(year, parseInt(second) - 1, parseInt(first));
+    if (!isNaN(euDate.getTime()) && parseInt(second) <= 12) {
+      const month = String(euDate.getMonth() + 1).padStart(2, '0');
+      const day = String(euDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  }
+  
+  // If all parsing fails
+  console.warn(`Could not parse date: "${dateValue}"`);
+  return null;
+}
+
+/**
+ * Format date to YYYY-MM for month inputs
+ */
+function formatMonthForInput(dateValue) {
+  if (!dateValue) return null;
+  
+  // If already in YYYY-MM format
+  if (/^\d{4}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  const date = new Date(dateValue);
+  
+  if (!isNaN(date.getTime())) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+  
+  return null;
+}
+
+/**
+ * Format date to YYYY-Www for week inputs
+ */
+function formatWeekForInput(dateValue) {
+  if (!dateValue) return null;
+  
+  // If already in YYYY-Www format
+  if (/^\d{4}-W\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  
+  const date = new Date(dateValue);
+  
+  if (!isNaN(date.getTime())) {
+    const year = date.getFullYear();
+    const week = getWeekNumber(date);
+    return `${year}-W${String(week).padStart(2, '0')}`;
+  }
+  
+  return null;
+}
+
+/**
+ * Get ISO week number from date
+ */
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
 // ==================== DROPDOWN FILLING LOGIC ====================
@@ -870,7 +1261,7 @@ function findBestDropdownMatch(options, profileValue, fieldLabel) {
     } else if (labelLower.includes('h1b') || labelLower.includes('o-1') || labelLower.includes('tn')) {
       mappingCategory = DROPDOWN_MAPPINGS.sponsored_visa_status;
     } else if (labelLower.includes('compete') || labelLower.includes('restrictive')) {
-      mappingCategory = DROPDOWN_MAPPINGS.has_noncompete;
+      mappingCategory = DROPDOWN_MAPPINGS.restrictive_bond;
     } else if (labelLower.includes('employment type') || labelLower.includes('job type')) {
       mappingCategory = DROPDOWN_MAPPINGS.employment_type;
     } else if (labelLower.includes('experience')) {
@@ -881,6 +1272,8 @@ function findBestDropdownMatch(options, profileValue, fieldLabel) {
       mappingCategory = DROPDOWN_MAPPINGS.willing_relocate;
     } else if (labelLower.includes('hear about') || labelLower.includes('find us')) {
       mappingCategory = DROPDOWN_MAPPINGS.referral_source;
+    } else if (labelLower.includes('hispanic') || labelLower.includes('latino')) {
+      mappingCategory = DROPDOWN_MAPPINGS.hispanicLatino;
     }
     
     if (mappingCategory) {

@@ -87,7 +87,11 @@ PROFILE_FIELD_DESCRIPTIONS = {
     'hispanic_latino': 'hispanic or latino or are you hispanic or latino or hispanic latino ethnicity or ethnicity',
     'race': 'race or racial identity or ethnicity or what is your race or racial background or ethnic background',
     'veteran_status': 'veteran status or are you a veteran or military veteran or protected veteran or veteran',
-    'disability_status': 'disability status or do you have a disability or disability or physical disability or protected disability status'
+    'disability_status': 'disability status or do you have a disability or disability or physical disability or protected disability status',
+    
+    # Documents 
+    'resume_filename': 'resume or cv or curriculum vitae or upload resume or attach resume or your resume or resume file or resume upload or upload your resume or attach your cv',
+    'cover_letter_filename': 'cover letter or upload cover letter or attach cover letter or letter of interest or cover letter file or cover letter upload or upload your cover letter or motivation letter',
 }
 
 def find_best_match(model, form_field_label):

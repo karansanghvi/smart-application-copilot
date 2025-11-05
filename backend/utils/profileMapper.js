@@ -119,7 +119,22 @@ const getFieldValue = (fieldName, profile, index = 0) => {
         'resume_filename': profile.resume_filename,
         'resume_path': profile.resume_path,
         'cover_letter_filename': profile.cover_letter_filename,
-        'cover_letter_path': profile.cover_letter_path
+        'cover_letter_path': profile.cover_letter_path,
+
+        // File Information - Return file metadata
+        'resume_filename': profile.resume_filename ? {
+            filename: profile.resume_filename,
+            path: profile.resume_path,
+            type: 'resume',
+            downloadUrl: `http://localhost:3000/api/profiles/${profile.id}/resume`
+        } : null,
+        
+        'cover_letter_filename': profile.cover_letter_filename ? {
+            filename: profile.cover_letter_filename,
+            path: profile.cover_letter_path,
+            type: 'cover_letter',
+            downloadUrl: `http://localhost:3000/api/profiles/${profile.id}/cover-letter`
+        } : null,
     };
 
     const value = fieldMap[fieldName];

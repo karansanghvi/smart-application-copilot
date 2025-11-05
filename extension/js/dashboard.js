@@ -3,7 +3,7 @@ console.log('══════════════════════�
 console.log('🧪 TEST LOG - If you can see this, logging is working!');
 console.log('═══════════════════════════════════════════════════════════');
 
-// dashboard.js - Complete Updated Version with Detailed Logging
+// dashboard.js - Complete Updated Version with File Upload Support
 
 // ==================== INITIALIZATION ====================
 
@@ -13,8 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (profileId) {
         loadUserName(profileId);
-        // Uncomment below to run API tests on page load
-        // await testAutofillAPI(profileId);
     } else {
         console.log('⚠️ No profile ID found. Please complete onboarding first.');
     }
@@ -237,7 +235,7 @@ async function autofillTabForm(tabId, buttonElement) {
         const fields = detectResponse.fields;
         console.log(`✅ Detected ${fields.length} form fields\n`);
 
-        // Log each detected field
+        // Log each detected field including file inputs
         console.log('📝 DETECTED FIELDS DETAILS:');
         fields.forEach((field, index) => {
             console.log(`\n   Field #${index + 1}:`);
@@ -249,6 +247,10 @@ async function autofillTabForm(tabId, buttonElement) {
             console.log(`      Autocomplete: ${field.autocomplete || 'N/A'}`);
             console.log(`      Selector: ${field.selector}`);
             console.log(`      Required: ${field.required}`);
+            console.log(`      Is File Input: ${field.isFileInput || false}`);
+            if (field.isFileInput) {
+                console.log(`      Accepted Types: ${field.acceptedFileTypes || 'any'}`);
+            }
             console.log(`      Current Value: ${field.value ? '"' + field.value + '"' : 'empty'}`);
         });
         console.log('─────────────────────────────────────────────────────────');
@@ -264,7 +266,7 @@ async function autofillTabForm(tabId, buttonElement) {
 
         console.log('📤 Sending field labels to AI service:');
         fieldLabels.forEach((label, index) => {
-            console.log(`   ${index + 1}. "${label}"`);
+            console.log(`   ${index + 1}. "${label}" ${fields[index].isFileInput ? '📁' : ''}`);
         });
 
         // Step 5: Call backend API to get matched values
@@ -309,7 +311,20 @@ async function autofillTabForm(tabId, buttonElement) {
         console.log('\n✍️ PREPARING AUTOFILL DATA:');
         console.log('─────────────────────────────────────────────────────────');
         
+        // Debug: Inspect file field values
+        console.log('🔍 INSPECTING FILE FIELD VALUES:');
+        matchData.data.results.forEach((result, index) => {
+            if (fields[index].isFileInput) {
+                console.log(`\n   Field: ${result.formFieldLabel}`);
+                console.log(`   Value type: ${typeof result.value}`);
+                console.log(`   Value:`, result.value);
+                console.log(`   Has downloadUrl? ${result.value?.downloadUrl ? 'YES' : 'NO'}`);
+                console.log(`   Has filename? ${result.value?.filename ? 'YES' : 'NO'}`);
+            }
+        });
+        
         const fillData = [];
+        const fileFields = []; 
         const matchedFields = [];
         const unmatchedFields = [];
         const fieldsWithoutValues = [];
@@ -322,17 +337,47 @@ async function autofillTabForm(tabId, buttonElement) {
                 confidence: result.confidence,
                 hasValue: result.has_value,
                 value: result.value,
-                selector: fields[index].selector
+                selector: fields[index].selector,
+                isFileInput: fields[index].isFileInput
             };
 
-            if (result.has_value && result.value) {
+            // Handle file inputs separately
+            if (fields[index].isFileInput) {
+                console.log(`\n   📁 File Input Detected: "${result.formFieldLabel}"`);
+                
+                // Check if we have a value and it's an object (file metadata)
+                if (result.has_value && result.value && typeof result.value === 'object') {
+                    console.log(`      ✅ File metadata found:`, result.value);
+                    
+                    fileFields.push({
+                        selector: fields[index].selector,
+                        fileInfo: result.value,
+                        fieldLabel: result.formFieldLabel,
+                        acceptedTypes: fields[index].acceptedFileTypes
+                    });
+                    matchedFields.push(fieldInfo);
+                } else {
+                    console.log(`      ⚠️ No file available in profile`);
+                    fieldsWithoutValues.push(fieldInfo);
+                }
+            }
+            // Regular text/dropdown/date fields
+            else if (result.has_value && result.value) {
+                // Skip if value is an object (shouldn't happen for non-file fields)
+                if (typeof result.value === 'object') {
+                    console.warn(`   ⚠️ Unexpected object value for non-file field: "${result.formFieldLabel}"`);
+                    unmatchedFields.push(fieldInfo);
+                    return;
+                }
+                
                 fillData.push({
                     selector: fields[index].selector,
                     value: result.value,
                     fieldLabel: result.formFieldLabel
                 });
                 matchedFields.push(fieldInfo);
-            } else if (!result.has_value) {
+            } 
+            else if (!result.has_value) {
                 fieldsWithoutValues.push(fieldInfo);
             } else {
                 unmatchedFields.push(fieldInfo);
@@ -346,7 +391,11 @@ async function autofillTabForm(tabId, buttonElement) {
                 console.log(`\n   Field #${field.index}: "${field.label}"`);
                 console.log(`      ↳ Matched to: ${field.matchedTo}`);
                 console.log(`      ↳ Confidence: ${(field.confidence * 100).toFixed(1)}%`);
-                console.log(`      ↳ Value: "${field.value}"`);
+                if (!field.isFileInput) {
+                    console.log(`      ↳ Value: "${field.value}"`);
+                } else {
+                    console.log(`      ↳ File: ${field.value?.filename || 'N/A'}`);
+                }
                 console.log(`      ↳ Selector: ${field.selector}`);
             });
         } else {
@@ -380,45 +429,106 @@ async function autofillTabForm(tabId, buttonElement) {
         }
         console.log('─────────────────────────────────────────────────────────');
 
-        if (fillData.length === 0) {
-            console.warn('\n⚠️ WARNING: No matching data found to fill');
-            throw new Error('No matching data found to fill.');
-        }
-
-        console.log(`\n📝 Preparing to fill ${fillData.length} fields...`);
-
-        // Step 7: Fill the form
-        console.log('\n🎯 EXECUTING AUTOFILL:');
+        // Step 7: Fill regular form fields first
+        console.log('\n🎯 EXECUTING AUTOFILL (Regular Fields):');
         console.log('─────────────────────────────────────────────────────────');
         
-        let fillResponse;
-        const fillStartTime = Date.now();
+        let fillResponse = { result: { filledCount: 0, totalFields: 0, errors: [] } };
         
-        try {
-            fillResponse = await sendMessageWithRetry(tabId, {
-                action: 'autofillForm',
-                data: fillData
-            }, 2);
-        } catch (error) {
-            console.error('❌ Autofill execution failed:', error);
-            throw new Error('Failed to fill form fields. Please try again.');
-        }
+        if (fillData.length > 0) {
+            console.log(`\n📝 Preparing to fill ${fillData.length} regular fields...`);
+            
+            const fillStartTime = Date.now();
+            
+            try {
+                fillResponse = await sendMessageWithRetry(tabId, {
+                    action: 'autofillForm',
+                    data: fillData
+                }, 2);
+            } catch (error) {
+                console.error('❌ Autofill execution failed:', error);
+                throw new Error('Failed to fill form fields. Please try again.');
+            }
 
-        const fillDuration = Date.now() - fillStartTime;
-        console.log(`✅ Autofill completed in ${fillDuration}ms`);
+            const fillDuration = Date.now() - fillStartTime;
+            console.log(`✅ Regular fields autofilled in ${fillDuration}ms`);
 
-        console.log('\n📊 AUTOFILL RESULTS:');
-        console.log(`   Fields Filled: ${fillResponse.result.filledCount}`);
-        console.log(`   Fields Attempted: ${fillResponse.result.totalFields}`);
-        console.log(`   Success Rate: ${((fillResponse.result.filledCount / fillResponse.result.totalFields) * 100).toFixed(1)}%`);
-        
-        if (fillResponse.result.errors && fillResponse.result.errors.length > 0) {
-            console.log('\n⚠️ ERRORS DURING FILLING:');
-            fillResponse.result.errors.forEach(error => {
-                console.log(`   - ${error}`);
-            });
+            console.log('\n📊 REGULAR FIELDS AUTOFILL RESULTS:');
+            console.log(`   Fields Filled: ${fillResponse.result.filledCount}`);
+            console.log(`   Fields Attempted: ${fillResponse.result.totalFields}`);
+            console.log(`   Success Rate: ${((fillResponse.result.filledCount / fillResponse.result.totalFields) * 100).toFixed(1)}%`);
+            
+            if (fillResponse.result.errors && fillResponse.result.errors.length > 0) {
+                console.log('\n⚠️ ERRORS DURING FILLING:');
+                fillResponse.result.errors.forEach(error => {
+                    console.log(`   - ${error}`);
+                });
+            }
+        } else {
+            console.log('⚠️ No regular fields to fill');
         }
         console.log('─────────────────────────────────────────────────────────');
+
+        // Step 8: Handle file uploads
+        if (fileFields.length > 0) {
+            console.log('\n📁 PROCESSING FILE UPLOADS:');
+            console.log('─────────────────────────────────────────────────────────');
+            
+            let filesDownloaded = 0;
+            
+            for (const fileField of fileFields) {
+                console.log(`\n   Processing: "${fileField.fieldLabel}"`);
+                console.log(`   File Info:`, fileField.fileInfo);
+                
+                // Validate file info structure
+                if (!fileField.fileInfo.filename || !fileField.fileInfo.downloadUrl) {
+                    console.error(`   ❌ Invalid file info structure`);
+                    continue;
+                }
+                
+                console.log(`   Filename: ${fileField.fileInfo.filename}`);
+                console.log(`   Type: ${fileField.fileInfo.type}`);
+                console.log(`   Download URL: ${fileField.fileInfo.downloadUrl}`);
+                
+                // Download the file
+                try {
+                    buttonElement.textContent = `📥 Downloading ${fileField.fileInfo.type}...`;
+                    
+                    const downloaded = await downloadFileFromBackend(fileField.fileInfo, profileId);
+                    
+                    if (downloaded) {
+                        filesDownloaded++;
+                        
+                        // Wait a bit between downloads
+                        await sleep(500);
+                        
+                        // Highlight the file input field
+                        try {
+                            await sendMessageWithRetry(tabId, {
+                                action: 'highlightFileInput',
+                                selector: fileField.selector,
+                                filename: fileField.fileInfo.filename
+                            }, 2);
+                        } catch (error) {
+                            console.error('   ⚠️ Failed to highlight file input:', error);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`   ❌ Failed to process file:`, error);
+                }
+            }
+            
+            console.log('─────────────────────────────────────────────────────────');
+            
+            // Show notification about manual upload
+            if (filesDownloaded > 0) {
+                showNotification(
+                    `📁 Downloaded ${filesDownloaded} file(s). Please upload them to the highlighted fields.`,
+                    'info',
+                    7000
+                );
+            }
+        }
 
         // Success!
         buttonElement.textContent = '✅ Done!';
@@ -427,54 +537,12 @@ async function autofillTabForm(tabId, buttonElement) {
         console.log('\n✅ AUTOFILL PROCESS COMPLETED SUCCESSFULLY');
         console.log('═══════════════════════════════════════════════════════════\n');
 
-        // ========== GENERATE PDF REPORT ==========
-try {
-    console.log('📄 Generating PDF report...');
-    
-    const reportGenerator = new AutofillReportGenerator();
-    const reportData = {
-        tabInfo: {
-            title: tab.title,
-            url: tab.url
-        },
-        totalFields: fields.length,
-        matchedFields: matchedFields,
-        fieldsWithoutValues: fieldsWithoutValues,
-        unmatchedFields: unmatchedFields,
-        filledCount: fillResponse.result.filledCount,
-        timestamp: new Date().toLocaleString()
-    };
-    
-    const pdfDoc = reportGenerator.generateReport(reportData);
-    
-    // Generate filename with timestamp
-    const timestamp = new Date().toISOString().split('T')[0];
-    const filename = `JobFlow_Autofill_Report_${timestamp}.pdf`;
-    
-    // Download the PDF
-    reportGenerator.downloadPDF(pdfDoc, filename);
-    
-    console.log(`✅ PDF report generated: ${filename}`);
-    
-    // Show notification with option to view report
-    showNotification(
-        `Successfully filled ${fillResponse.result.filledCount} fields! PDF report downloaded.`,
-        'success'
-    );
-} catch (pdfError) {
-    console.error('❌ Failed to generate PDF report:', pdfError);
-    // Don't fail the whole process if PDF generation fails
-    showNotification(
-        `Successfully filled ${fillResponse.result.filledCount} out of ${fillData.length} fields!`,
-        'success'
-    );
-}
-        
         // Show success message
-        // showNotification(
-        //     `Successfully filled ${fillResponse.result.filledCount} out of ${fillData.length} fields!`,
-        //     'success'
-        // );
+        const totalFilled = fillResponse.result.filledCount + (fileFields.length || 0);
+        showNotification(
+            `Successfully filled ${totalFilled} fields!${fileFields.length > 0 ? ` (${fileFields.length} file(s) downloaded)` : ''}`,
+            'success'
+        );
 
         // Close modal after a delay
         setTimeout(() => {
@@ -501,6 +569,45 @@ try {
         }, 3000);
     }
 }
+
+// ==================== FILE DOWNLOAD HELPER ====================
+
+async function downloadFileFromBackend(fileInfo, profileId) {
+    try {
+        console.log(`   📥 Downloading ${fileInfo.type}: ${fileInfo.filename}`);
+        
+        const downloadUrl = fileInfo.type === 'resume' 
+            ? `http://localhost:3000/api/profiles/${profileId}/resume`
+            : `http://localhost:3000/api/profiles/${profileId}/cover-letter`;
+        
+        const response = await fetch(downloadUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileInfo.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        console.log(`   ✅ Downloaded: ${fileInfo.filename}`);
+        return true;
+        
+    } catch (error) {
+        console.error(`   ❌ Error downloading ${fileInfo.type}:`, error);
+        return false;
+    }
+}
+
+// ==================== UTILITY FUNCTIONS ====================
 
 // Check if URL is restricted (cannot inject content scripts)
 function isRestrictedUrl(url) {
@@ -597,25 +704,29 @@ async function sendMessageWithRetry(tabId, message, maxRetries = 3) {
     throw new Error(`Failed after ${maxRetries} attempts: ${lastError.message}`);
 }
 
-// ==================== UTILITY FUNCTIONS ====================
-
 // Helper function to sleep
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 // Show notification in dashboard
-function showNotification(message, type = 'success') {
+function showNotification(message, type = 'success', duration = 4000) {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
+    
+    const colors = {
+        success: 'linear-gradient(135deg, #10b981, #059669)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        info: 'linear-gradient(135deg, #3b82f6, #2563eb)'
+    };
     
     notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
         padding: 16px 24px;
-        background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)'};
+        background: ${colors[type] || colors.info};
         color: white;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -623,6 +734,7 @@ function showNotification(message, type = 'success') {
         font-size: 14px;
         font-weight: 500;
         animation: slideIn 0.3s ease;
+        max-width: 400px;
     `;
     
     document.body.appendChild(notification);
@@ -630,7 +742,7 @@ function showNotification(message, type = 'success') {
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
-    }, 4000);
+    }, duration);
 }
 
 // Escape HTML to prevent XSS
@@ -639,8 +751,6 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
-
-// Add this at the end of the file
 
 // On-screen logging for debugging
 const logDisplay = document.getElementById('logDisplay');
